@@ -125,6 +125,8 @@ class EventHandler {
                 case 'QueueMember': $this->onQueueMemberResponse($event); break;
                 case 'QueueEntry': $this->onQueueEntry($event); break;
                 case 'Hangup': $this->onHangup($event); break;
+                case 'DialBegin': $this->onDialBegin($event); break;
+                case 'DialEnd': $this->onDialEnd($event); break;
                 case 'DeviceStateChange':
                 case 'ExtensionStatus': $this->onDeviceState($event); break;
                 // Ignore noisy events
@@ -217,7 +219,7 @@ class EventHandler {
         
         $stmt = $this->db->prepare("
             UPDATE agent_status SET status = 'on_call', status_since = NOW(), 
-            current_call_id = ?, talking_to = ?, talking_to_name = ?, call_started_at = NOW() WHERE extension = ?
+            current_call_id = ?, talking_to = ?, talking_to_name = ?, current_call_type = 'inbound', call_started_at = NOW() WHERE extension = ?
         ");
         $stmt->execute([$uid, $caller, $callerName, $ext]);
         
@@ -385,4 +387,68 @@ class EventHandler {
     
     public function getEventCounts() { return $this->eventCounts; }
     public function getUnknownEvents() { return array_keys($this->unknownEvents); }
+
+    // === OUTBOUND CALL TRACKING ===
+    
+    private function onDialBegin($e) {
+        $channel = $this->getChannel($e);
+        if (!preg_match("/PJSIP\/(\d+)/", $channel, $m)) return;
+        $ext = $m[1];
+        
+        $dialedNum = $this->getField($e, ["DestCallerIDNum", "DialString", "Exten"]);
+        $dialedName = $this->getField($e, ["DestCallerIDName"]);
+        $uid = $this->getUniqueId($e);
+        
+        // Skip internal calls (extension to extension) and queue calls
+        if (preg_match("/^\d{4}$/", $dialedNum)) return;
+        if (strpos($dialedNum, "Local/") !== false) return;
+        
+        $this->log("Outbound: $ext dialing $dialedNum", "EVENT");
+        
+        $stmt = $this->db->prepare("
+            UPDATE agent_status SET 
+                status = \"ringing\",
+                current_call_type = \"outbound\",
+                talking_to = ?,
+                talking_to_name = ?,
+                current_call_id = ?,
+                call_started_at = NOW(),
+                status_since = NOW()
+            WHERE extension = ?
+        ");
+        $stmt->execute([$dialedNum, $dialedName, $uid, $ext]);
+    }
+    
+    private function onDialEnd($e) {
+        $channel = $this->getChannel($e);
+        if (!preg_match("/PJSIP\/(\d+)/", $channel, $m)) return;
+        $ext = $m[1];
+        
+        $dialStatus = $this->getField($e, ["DialStatus"]);
+        
+        if ($dialStatus === "ANSWER") {
+            $stmt = $this->db->prepare("
+                UPDATE agent_status SET 
+                    status = \"on_call\",
+                    call_started_at = NOW(),
+                    status_since = NOW()
+                WHERE extension = ? AND current_call_type = \"outbound\"
+            ");
+            $stmt->execute([$ext]);
+            $this->log("Outbound answered: $ext", "EVENT");
+        } else {
+            $stmt = $this->db->prepare("
+                UPDATE agent_status SET 
+                    status = \"available\",
+                    current_call_type = NULL,
+                    talking_to = NULL,
+                    talking_to_name = NULL,
+                    current_call_id = NULL,
+                    call_started_at = NULL,
+                    status_since = NOW()
+                WHERE extension = ? AND current_call_type = \"outbound\"
+            ");
+            $stmt->execute([$ext]);
+        }
+    }
 }
