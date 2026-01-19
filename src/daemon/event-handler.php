@@ -126,6 +126,7 @@ class EventHandler {
                 case 'QueueEntry': $this->onQueueEntry($event); break;
                 case 'Hangup': $this->onHangup($event); break;
                 case 'DialBegin': $this->onDialBegin($event); break;
+                case 'Newchannel': $this->onNewchannel($event); break;
                 case 'DialEnd': $this->onDialEnd($event); break;
                 case 'DeviceStateChange':
                 case 'ExtensionStatus': $this->onDeviceState($event); break;
@@ -406,6 +407,38 @@ class EventHandler {
 
     // === OUTBOUND CALL TRACKING ===
     
+    
+    // === OUTBOUND DETECTION VIA NEWCHANNEL ===
+    
+    private function onNewchannel($e) {
+        $channel = $this->getChannel($e);
+        // Only track PJSIP channels from agent extensions (4 digits)
+        if (!preg_match("/PJSIP\/(\d{4})-/", $channel, $m)) return;
+        $ext = $m[1];
+        
+        $exten = $this->getField($e, ["Exten"]); // What they are dialing
+        $context = $this->getField($e, ["Context"]);
+        
+        // Skip if not dialing an external number (7+ digits or starts with +)
+        if (!$exten) return;
+        if (strlen($exten) < 7 && !preg_match("/^\+/", $exten)) return;
+        // Skip queue contexts
+        if (strpos($context, "queue") !== false) return;
+        
+        $this->log("Newchannel outbound: $ext dialing $exten", "EVENT");
+        
+        $stmt = $this->db->prepare("
+            UPDATE agent_status SET 
+                status = \"ringing\",
+                current_call_type = \"outbound\",
+                talking_to = ?,
+                call_started_at = NOW(),
+                status_since = NOW()
+            WHERE extension = ?
+        ");
+        $stmt->execute([$exten, $ext]);
+    }
+
     private function onDialBegin($e) {
         $channel = $this->getChannel($e);
         if (!preg_match("/PJSIP\/(\d+)/", $channel, $m)) return;

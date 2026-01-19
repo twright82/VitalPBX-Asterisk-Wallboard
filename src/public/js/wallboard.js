@@ -202,6 +202,9 @@ class Wallboard {
                 return `<span class="${badgeClass}">${this.escapeHtml(name)}</span>`;
             }).join('');
             
+            // Build stats line
+            const talkTimeFormatted = this.formatDuration(agent.talk_time_today || 0);
+            const statsHtml = `<div class="agent-stats">📞 ${agent.calls_today || 0} calls · ⏱️ ${talkTimeFormatted}${agent.missed_today ? ` · ❌ ${agent.missed_today} missed` : ""}</div>`;
             return `
                 <div class="${cardClass}" data-extension="${agent.extension}">
                     <div class="agent-row-top">
@@ -212,6 +215,7 @@ class Wallboard {
                         ${timerHtml}
                     </div>
                     ${statusHtml}
+                    ${statsHtml}
                     <div class="queue-badges">${queueBadges}</div>
                 </div>
             `;
