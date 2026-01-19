@@ -51,6 +51,17 @@ try {
     $totalAbandoned = 0;
     
     foreach ($queues as &$queue) {
+        // Calculate actual longest wait from calls table (more accurate than stored value)
+        $waitingCall = $db->fetchOne("
+            SELECT COALESCE(MAX(TIMESTAMPDIFF(SECOND, entered_queue_at, NOW())), 0) as longest_wait,
+                   COUNT(*) as calls_waiting
+            FROM calls 
+            WHERE queue_number = ? AND status = 'waiting'
+        ", [$queue['queue_number']]);
+        
+        $queue['calls_waiting'] = $waitingCall['calls_waiting'] ?? 0;
+        $queue['longest_wait'] = $waitingCall['longest_wait'] ?? 0;
+        
         $totalWaiting += $queue['calls_waiting'];
         $longestWait = max($longestWait, $queue['longest_wait']);
         $totalCalls += $queue['calls_today'];

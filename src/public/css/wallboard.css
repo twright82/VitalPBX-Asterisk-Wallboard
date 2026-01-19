@@ -689,3 +689,12 @@ body {
     font-weight: 500;
     letter-spacing: 0.3px;
 }
+
+/* Queue card label */
+.queue-card .queue-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #888;
+    margin-top: -5px;
+    letter-spacing: 1px;
+}

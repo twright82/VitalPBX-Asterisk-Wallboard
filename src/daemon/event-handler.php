@@ -382,15 +382,28 @@ class EventHandler {
     // === HELPER METHODS ===
     
     private function updateQueueStats($queue) {
-        // Count waiting calls from active calls table
-        $stmt = $this->db->prepare("SELECT COUNT(*) FROM calls WHERE queue_number = ? AND status = 'waiting'");
+        // Count waiting calls and get longest wait time
+        $stmt = $this->db->prepare("
+            SELECT 
+                COUNT(*) as waiting_count,
+                COALESCE(MAX(TIMESTAMPDIFF(SECOND, entered_queue_at, NOW())), 0) as longest_wait
+            FROM calls 
+            WHERE queue_number = ? AND status = 'waiting'
+        ");
         $stmt->execute([$queue]);
-        $waiting = $stmt->fetchColumn();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $waiting = $result['waiting_count'] ?? 0;
+        $longestWait = $result['longest_wait'] ?? 0;
         
         $stmt = $this->db->prepare("
-            UPDATE queue_stats_realtime SET calls_waiting = ?, updated_at = NOW() WHERE queue_number = ?
+            UPDATE queue_stats_realtime 
+            SET calls_waiting = ?, longest_wait_seconds = ?, updated_at = NOW() 
+            WHERE queue_number = ?
         ");
-        $stmt->execute([$waiting, $queue]);
+        $stmt->execute([$waiting, $longestWait, $queue]);
+        
+        $this->log("Queue $queue stats: $waiting waiting, longest wait: $longestWait sec", 'DEBUG');
     }
     
     private function trackRepeatCaller($number, $name, $queue) {
