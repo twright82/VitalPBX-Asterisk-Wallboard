@@ -81,8 +81,12 @@ try {
             a.calls_today,
             a.talk_time_today,
             a.avg_handle_time,
-            a.missed_today
+            a.missed_today,
+            c.queue_number as current_queue,
+            q.display_name as current_queue_name
         FROM agent_status a
+        LEFT JOIN calls c ON a.current_call_id = c.unique_id
+        LEFT JOIN queues q ON c.queue_number = q.queue_number
         INNER JOIN extensions e ON a.extension = e.extension
         WHERE e.is_active = 1
         ORDER BY 

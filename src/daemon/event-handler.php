@@ -155,6 +155,13 @@ class EventHandler {
         
         if (!$queue) { $this->log("QueueCallerJoin missing queue", 'WARN', $e); return; }
         
+        // Only track queues in our whitelist
+        $tracked = $this->db->query("SELECT queue_number FROM queues WHERE is_active = 1")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array($queue, $tracked)) {
+            $this->log("Skipping untracked queue: $queue", 'DEBUG');
+            return;
+        }
+        
         $this->log("Caller joined: $queue, Caller: $callerNum", 'EVENT');
         
         $stmt = $this->db->prepare("
@@ -176,6 +183,9 @@ class EventHandler {
     
     private function onQueueCallerAbandon($e) {
         $queue = $this->getQueue($e);
+        // Skip untracked queues
+        $tracked = $this->db->query("SELECT queue_number FROM queues WHERE is_active = 1")->fetchAll(PDO::FETCH_COLUMN);
+        if ($queue && !in_array($queue, $tracked)) return;
         $uid = $this->getUniqueId($e);
         $wait = $this->getField($e, ['HoldTime', 'Wait', 'WaitTime'], 0);
         
@@ -207,6 +217,12 @@ class EventHandler {
         $callerName = $this->getCallerName($e);
         $queue = $this->getQueue($e);
         if (!$ext) return;
+        // Skip untracked queues
+        $tracked = $this->db->query("SELECT queue_number FROM queues WHERE is_active = 1")->fetchAll(PDO::FETCH_COLUMN);
+        if ($queue && !in_array($queue, $tracked)) return;
+        // Skip untracked queues
+        $tracked = $this->db->query("SELECT queue_number FROM queues WHERE is_active = 1")->fetchAll(PDO::FETCH_COLUMN);
+        if ($queue && !in_array($queue, $tracked)) return;
         
         $this->log("Agent $ext connected to $caller (wait: {$wait}s)", 'EVENT');
         

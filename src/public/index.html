@@ -13,12 +13,12 @@
         <!-- Top Row -->
         <div class="top-row">
             <!-- Total Waiting -->
-            <div class="queue-total" id="queueTotal">
+            <div class="queue-total" id="queueTotal" title="Total calls waiting across all queues and the longest any caller has been waiting">
                 <div class="big-num" id="totalWaiting">0</div>
                 <div class="info">
-                    <div class="label">Calls Waiting</div>
+                    <div class="label">Calls Waiting <span class="info-icon" title="Total calls waiting across all queues">ℹ️</span></div>
                     <div class="wait-time" id="longestWait">0:00</div>
-                    <div class="label">Longest Wait</div>
+                    <div class="label">Longest Wait <span class="info-icon" title="How long the oldest caller has been waiting">ℹ️</span></div>
                 </div>
             </div>
             
@@ -29,15 +29,15 @@
             
             <!-- SLA + Callbacks -->
             <div class="side-boxes">
-                <div class="sla-box">
-                    <div class="label">Service Level</div>
+                <div class="sla-box" title="Service Level: Percentage of calls answered within the target time (usually 20-30 seconds). Green = 80%+, Yellow = 60-80%, Red = below 60%">
+                    <div class="label">Service Level <span class="info-icon" title="Percentage of calls answered within target time (20-30 sec). Green=80%+, Yellow=60-80%, Red=below 60%">ℹ️</span></div>
                     <div class="value" id="slaPercent">100%</div>
                 </div>
-                <div class="callback-box">
+                <div class="callback-box" title="Number of scheduled callbacks waiting to be made">
                     <div class="icon">📞</div>
                     <div>
                         <div class="count" id="callbackCount">0</div>
-                        <div class="label">Callbacks</div>
+                        <div class="label">Callbacks <span class="info-icon" title="Scheduled callbacks waiting to be made">ℹ️</span></div>
                     </div>
                 </div>
             </div>
@@ -49,7 +49,7 @@
             <!-- Agents Panel -->
             <div class="agents-panel">
                 <div class="panel-header">
-                    <div class="panel-title">👥 Agents</div>
+                    <div class="panel-title">👥 Agents <span class="info-icon" title="Agent status: Green=Available, Orange=On Call, Blue=Wrap-up, Gray=Paused/Offline. Hover over queue cards (Billing/Sales/Support) for detailed stats.">ℹ️</span></div>
                     <div class="status-pills" id="statusPills">
                         <div class="status-pill"><div class="pill-dot available"></div> <span id="countAvailable">0</span></div>
                         <div class="status-pill"><div class="pill-dot oncall"></div> <span id="countOnCall">0</span></div>
@@ -68,7 +68,7 @@
                 
                 <!-- Waiting Calls -->
                 <div class="sidebar-panel">
-                    <div class="title">⏳ Waiting</div>
+                    <div class="title">⏳ Waiting <span class="info-icon" title="Calls currently waiting in queue. Shows caller info, which queue, and how long theyve been waiting.">ℹ️</span></div>
                     <div class="waiting-list" id="waitingList">
                         <div class="empty-message">No calls waiting</div>
                     </div>
@@ -76,7 +76,7 @@
                 
                 <!-- Leaderboard -->
                 <div class="sidebar-panel leaderboard">
-                    <div class="title">🏆 Today's Leaders</div>
+                    <div class="title">🏆 Today's Leaders <span class="info-icon" title="Top agents by calls answered today. Shows call count and average handle time.">ℹ️</span></div>
                     <div id="leaderboard">
                         <div class="empty-message">No calls yet today</div>
                     </div>

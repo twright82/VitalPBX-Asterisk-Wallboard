@@ -667,3 +667,14 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #4b4b7c;
 }
+
+/* Info icon tooltips */
+.info-icon {
+    cursor: help;
+    font-size: 0.7em;
+    opacity: 0.6;
+    vertical-align: super;
+}
+.info-icon:hover {
+    opacity: 1;
+}

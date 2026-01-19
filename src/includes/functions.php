@@ -232,20 +232,21 @@ function get_leaderboard($limit = 3, $date = null) {
     try {
         $db = Database::getInstance();
         
-        $dateFilter = $date ? "DATE(created_at) = :date" : "DATE(created_at) = CURDATE()";
+        $dateFilter = $date ? "DATE(c.created_at) = :date" : "DATE(c.created_at) = CURDATE()";
         $params = $date ? ['date' => $date] : [];
         
         $sql = "
             SELECT 
-                agent_extension as extension,
-                agent_name as name,
+                c.agent_extension as extension,
+                CONCAT(e.first_name, ' ', COALESCE(e.last_name, '')) as name,
                 COUNT(*) as calls,
-                AVG(talk_time) as avg_time
-            FROM calls 
-            WHERE status = 'completed' 
-                AND agent_extension IS NOT NULL
+                AVG(c.talk_time) as avg_time
+            FROM calls c
+            INNER JOIN extensions e ON c.agent_extension = e.extension AND e.is_active = 1
+            WHERE c.status = 'completed' 
+                AND c.agent_extension IS NOT NULL
                 AND $dateFilter
-            GROUP BY agent_extension, agent_name
+            GROUP BY c.agent_extension
             ORDER BY calls DESC, avg_time ASC
             LIMIT $limit
         ";

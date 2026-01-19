@@ -241,6 +241,7 @@ class AMIConnector {
         
         $response = $this->sendAction('Login', [
             'Username' => $this->username,
+            'Events' => 'on',
             'Secret' => $this->password
         ]);
         

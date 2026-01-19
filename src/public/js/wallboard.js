@@ -140,7 +140,7 @@ class Wallboard {
             }
             
             return `
-                <div class="${cardClass}" data-queue="${queue.queue_number}">
+                <div class="${cardClass}" data-queue="${queue.queue_number}" title="${queue.display_name}: ${queue.calls_waiting} waiting, ${queue.calls_today} today (${queue.answered_today} ans, ${queue.abandoned_today} abd)">
                     <div class="name">${this.escapeHtml(queue.display_name)}</div>
                     <div class="count">${queue.calls_waiting}</div>
                     <div class="wait">Max: ${this.formatDuration(queue.longest_wait)}</div>
@@ -163,7 +163,7 @@ class Wallboard {
             
             // Build timer
             let timerHtml = '';
-            if (agent.status === 'on_call' || agent.status === 'ringing') {
+            if ((agent.status === 'on_call' || agent.status === 'ringing') && agent.call_started_at) {
                 timerHtml = `<div class="agent-timer" data-start="${agent.call_started_at}">${this.formatDuration(agent.call_duration)}</div>`;
             } else if (agent.status === 'wrapup') {
                 const remaining = Math.max(0, this.wrapupTime - agent.status_duration);
@@ -176,10 +176,15 @@ class Wallboard {
             if (agent.status === 'available') {
                 statusHtml = '<div class="agent-status available">Available</div>';
             } else if (agent.status === 'on_call') {
-                const brandTag = agent.brand_tag ? `<span class="brand-tag">${this.escapeHtml(agent.brand_tag)}</span>` : '';
-                statusHtml = `<div class="agent-status talking">${agent.talking_to_name || this.formatPhone(agent.talking_to)} ${brandTag}</div>`;
+                const callIcon = agent.current_call_type === 'outbound' ? '📤 ' : '📞 ';
+                const phoneNum = this.extractPhone(agent.talking_to);
+                const formattedPhone = phoneNum ? this.formatPhone(phoneNum) : '';
+                let queuePrefix = agent.current_queue_name ? agent.current_queue_name + ' ' : ''; let callerDisplay = queuePrefix + (agent.talking_to_name || '') + (formattedPhone ? ' ' + formattedPhone : ''); if (!callerDisplay.trim()) callerDisplay = 'On call';
+                statusHtml = `<div class="agent-status talking">${callIcon}${callerDisplay}</div>`;
             } else if (agent.status === 'ringing') {
-                statusHtml = '<div class="agent-status ringing">📞 Ringing...</div>';
+                const ringIcon = agent.current_call_type === 'outbound' ? '📤 Dialing: ' : '📞 ';
+                const ringInfo = agent.talking_to_name || this.formatPhone(agent.talking_to) || 'Incoming';
+                statusHtml = `<div class="agent-status ringing">${ringIcon}${ringInfo}</div>`;
             } else if (agent.status === 'wrapup') {
                 statusHtml = '<div class="agent-status wrapup">⏱️ Wrap-up</div>';
             } else if (agent.status === 'paused') {
@@ -342,6 +347,15 @@ class Wallboard {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
     
+    extractPhone(accountNum) {
+        if (!accountNum) return null;
+        const match = accountNum.match(/^#\d{2}(\d{10})$/);
+        if (match) return match[1];
+        if (accountNum.startsWith('+')) return accountNum.replace('+1', '');
+        if (/^\d{10,11}$/.test(accountNum)) return accountNum;
+        return null;
+    }
+
     formatPhone(number) {
         if (!number) return '';
         
