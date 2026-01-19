@@ -177,7 +177,7 @@ class Wallboard {
                 statusHtml = '<div class="agent-status available">Available</div>';
             } else if (agent.status === 'on_call') {
                 const brandTag = agent.brand_tag ? `<span class="brand-tag">${this.escapeHtml(agent.brand_tag)}</span>` : '';
-                statusHtml = `<div class="agent-status talking">${this.formatPhone(agent.talking_to)} ${brandTag}</div>`;
+                statusHtml = `<div class="agent-status talking">${agent.talking_to_name || this.formatPhone(agent.talking_to)} ${brandTag}</div>`;
             } else if (agent.status === 'ringing') {
                 statusHtml = '<div class="agent-status ringing">📞 Ringing...</div>';
             } else if (agent.status === 'wrapup') {

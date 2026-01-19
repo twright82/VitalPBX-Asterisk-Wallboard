@@ -108,6 +108,7 @@ try {
         // Format average handle time
         $agent['avg_handle_time_formatted'] = format_duration($agent['avg_handle_time']);
     }
+    unset($agent);
     
     // Get queue membership for each agent
     $memberships = $db->fetchAll("
@@ -130,6 +131,7 @@ try {
     foreach ($agents as &$agent) {
         $agent['queues'] = $agentQueues[$agent['extension']] ?? [];
     }
+    unset($agent);
     
     // Get calls waiting details
     $callsWaiting = $db->fetchAll("

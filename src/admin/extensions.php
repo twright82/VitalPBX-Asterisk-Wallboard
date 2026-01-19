@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 VALUES (:ext, :first, :last, :team, :active)
             ", [
                 'ext' => trim($_POST['extension']),
-                'first' => trim($_POST['first_name']),
+                'first' => trim($_POST['first_name']) ?: 'Ext ' . trim($_POST['extension']),
                 'last' => trim($_POST['last_name']) ?: null,
                 'team' => trim($_POST['team']) ?: null,
                 'active' => isset($_POST['is_active']) ? 1 : 0
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ", [
                 'id' => (int) $_POST['id'],
                 'ext' => trim($_POST['extension']),
-                'first' => trim($_POST['first_name']),
+                'first' => trim($_POST['first_name']) ?: 'Ext ' . trim($_POST['extension']),
                 'last' => trim($_POST['last_name']) ?: null,
                 'team' => trim($_POST['team']) ?: null,
                 'active' => isset($_POST['is_active']) ? 1 : 0
@@ -66,6 +66,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db->execute("DELETE FROM extensions WHERE id = :id", ['id' => (int) $_POST['id']]);
             $message = 'Extension deleted successfully';
             
+        
+        } elseif ($action === 'sync_vitalpbx') {
+            // Run VitalPBX sync
+            $output = shell_exec('php /var/www/html/scripts/sync_vitalpbx.php 2>&1');
+            $message = 'VitalPBX sync completed: ' . trim($output);
+
         } elseif ($action === 'bulk_add') {
             // Bulk add extensions
             $start = (int) $_POST['start_ext'];
@@ -122,6 +128,7 @@ $extensions = $db->fetchAll("
     <div class="card-header">
         <h3>Configured Extensions</h3>
         <div style="display: flex; gap: 10px;">
+            <form method="POST" style="display:inline;"><input type="hidden" name="action" value="sync_vitalpbx"><button type="submit" class="btn btn-secondary">🔄 Sync from VitalPBX</button></form>
             <button class="btn btn-secondary" onclick="openBulkModal()">+ Bulk Add</button>
             <button class="btn btn-primary" onclick="openModal('add')">+ Add Extension</button>
         </div>
@@ -217,8 +224,8 @@ $extensions = $db->fetchAll("
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="first_name">First Name *</label>
-                        <input type="text" id="first_name" name="first_name" required placeholder="John">
+                        <label for="first_name">First Name <span style="color:#666">(auto-syncs from VitalPBX)</span></label>
+                        <input type="text" id="first_name" name="first_name" placeholder="John">
                     </div>
                     
                     <div class="form-group">

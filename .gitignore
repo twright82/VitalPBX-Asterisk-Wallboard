@@ -1,0 +1,6 @@
+docker/.env
+logs/
+*.log
+docker/.env
+logs/
+*.log

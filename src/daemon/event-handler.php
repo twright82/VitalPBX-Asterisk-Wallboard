@@ -189,6 +189,7 @@ class EventHandler {
     private function onAgentCalled($e) {
         $ext = $this->extractExt($this->getMember($e));
         $caller = $this->getCallerNum($e);
+        $callerName = $this->getCallerName($e);
         if (!$ext) return;
         
         $this->log("Agent $ext ringing for $caller", 'EVENT');
@@ -201,13 +202,14 @@ class EventHandler {
         $uid = $this->getUniqueId($e);
         $wait = $this->getField($e, ['HoldTime', 'Wait', 'RingTime'], 0);
         $caller = $this->getCallerNum($e);
+        $callerName = $this->getCallerName($e);
         $queue = $this->getQueue($e);
         if (!$ext) return;
         
         $this->log("Agent $ext connected to $caller (wait: {$wait}s)", 'EVENT');
         
         $stmt = $this->db->prepare("
-            UPDATE calls SET status = 'in_progress', agent_extension = ?, 
+            UPDATE calls SET status = 'answered', agent_extension = ?, 
             agent_name = (SELECT display_name FROM extensions WHERE extension = ?),
             wait_time = ?, answered_at = NOW() WHERE unique_id = ?
         ");
@@ -215,9 +217,9 @@ class EventHandler {
         
         $stmt = $this->db->prepare("
             UPDATE agent_status SET status = 'on_call', status_since = NOW(), 
-            current_call_id = ?, talking_to = ?, call_started_at = NOW() WHERE extension = ?
+            current_call_id = ?, talking_to = ?, talking_to_name = ?, call_started_at = NOW() WHERE extension = ?
         ");
-        $stmt->execute([$uid, $caller, $ext]);
+        $stmt->execute([$uid, $caller, $callerName, $ext]);
         
         if ($queue) $this->updateQueueStats($queue);
     }
@@ -320,9 +322,9 @@ class EventHandler {
         $members = $this->getField($e, ['LoggedIn', 'Members'], 0);
         
         $stmt = $this->db->prepare("
-            INSERT INTO queue_stats_realtime (queue_number, queue_name, calls_waiting, agents_available, agents_total, updated_at)
+            INSERT INTO queue_stats_realtime (queue_number, queue_name, calls_waiting, agents_available, total_agents, updated_at)
             VALUES (?, ?, ?, ?, ?, NOW())
-            ON DUPLICATE KEY UPDATE calls_waiting = ?, agents_available = ?, agents_total = ?, updated_at = NOW()
+            ON DUPLICATE KEY UPDATE calls_waiting = ?, agents_available = ?, total_agents = ?, updated_at = NOW()
         ");
         $stmt->execute([$queue, $this->monitoredQueues[$queue]['display_name'] ?? $queue, $waiting, $available, $members, $waiting, $available, $members]);
     }
