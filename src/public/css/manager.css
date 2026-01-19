@@ -1,0 +1,365 @@
+/**
+ * Manager Dashboard Styles
+ * VitalPBX Asterisk Wallboard
+ */
+
+/* Dashboard Layout */
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 0;
+}
+
+/* Nav Bar */
+.nav-bar {
+    background: #12121c;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 1px solid #1e1e2e;
+    flex-shrink: 0;
+}
+
+.nav-brand {
+    font-size: 18px;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.nav-divider {
+    width: 1px;
+    height: 24px;
+    background: #2d2d44;
+}
+
+.nav-tabs {
+    display: flex;
+    gap: 5px;
+}
+
+.nav-tab {
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.nav-tab:hover {
+    background: #1a1a28;
+    color: #e2e8f0;
+}
+
+.nav-tab.active {
+    background: #3b82f6;
+    color: #fff;
+}
+
+.nav-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-clock {
+    font-family: monospace;
+    font-size: 18px;
+    color: #64748b;
+}
+
+.nav-btn {
+    padding: 8px 14px;
+    border-radius: 6px;
+    background: #1a1a28;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 14px;
+    border: 1px solid #2d2d44;
+    transition: all 0.2s;
+}
+
+.nav-btn:hover {
+    background: #252530;
+    color: #e2e8f0;
+}
+
+/* Top Row adjustments for manager */
+.dashboard .top-row {
+    padding: 15px 20px;
+    gap: 15px;
+}
+
+.dashboard .queue-total {
+    padding: 20px 25px;
+}
+
+.dashboard .big-num {
+    font-size: 72px;
+}
+
+.dashboard .wait-time {
+    font-size: 32px;
+}
+
+/* Stat boxes */
+.stat-box {
+    background: linear-gradient(145deg, #1a1a2e 0%, #0f0f1a 100%);
+    border-radius: 10px;
+    padding: 15px 20px;
+    text-align: center;
+    min-width: 100px;
+}
+
+.stat-box .label {
+    font-size: 11px;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.stat-box .value {
+    font-size: 36px;
+    font-weight: 700;
+}
+
+.stat-box.callbacks {
+    background: linear-gradient(145deg, #2e1065 0%, #1e1b4b 100%);
+}
+
+.stat-box.callbacks .value {
+    color: #c4b5fd;
+}
+
+/* Main content for manager */
+.dashboard .main-content {
+    display: flex;
+    gap: 15px;
+    padding: 0 20px;
+    flex: 1;
+    min-height: 0;
+}
+
+/* Panels */
+.panel {
+    background: linear-gradient(145deg, #12121c 0%, #0a0a10 100%);
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-title {
+    font-size: 13px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+.dashboard .agents-panel {
+    flex: 1;
+}
+
+.dashboard .right-sidebar {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dashboard .right-sidebar .panel {
+    flex: 1;
+}
+
+/* Manager Section */
+.manager-section {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    padding: 15px 20px;
+    flex-shrink: 0;
+}
+
+.manager-panel {
+    background: linear-gradient(145deg, #12121c 0%, #0a0a10 100%);
+    border-radius: 12px;
+    padding: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.manager-panel .panel-title {
+    font-size: 13px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    position: sticky;
+    top: 0;
+    background: inherit;
+}
+
+/* Alert List */
+.alert-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.alert-item {
+    background: #1a1a28;
+    border-radius: 6px;
+    padding: 10px;
+    border-left: 3px solid #f59e0b;
+    font-size: 13px;
+}
+
+.alert-item.critical {
+    border-left-color: #ef4444;
+    background: #1f1215;
+}
+
+.alert-item .time {
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.alert-item .message {
+    color: #e2e8f0;
+}
+
+/* Missed List */
+.missed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.missed-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1a1a28;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.missed-item .agent {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.missed-item .count {
+    background: #7f1d1d;
+    color: #fca5a5;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Repeat Callers */
+.repeat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.repeat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1a1a28;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.repeat-item .number {
+    font-family: monospace;
+    font-size: 14px;
+    color: #60a5fa;
+}
+
+.repeat-item .calls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.repeat-item .badge {
+    background: #78350f;
+    color: #fbbf24;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.repeat-item .last {
+    font-size: 11px;
+    color: #64748b;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.stat-item {
+    background: #1a1a28;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+}
+
+.stat-item .value {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.stat-item .value.good { color: #4ade80; }
+.stat-item .value.warning { color: #fbbf24; }
+.stat-item .value.bad { color: #ef4444; }
+
+.stat-item .label {
+    font-size: 10px;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+/* Bottom bar adjustments */
+.dashboard .bottom-bar {
+    margin: 0;
+    border-radius: 0;
+    padding: 10px 20px;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+    .manager-section {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 1024px) {
+    .dashboard .main-content {
+        flex-direction: column;
+    }
+    
+    .dashboard .right-sidebar {
+        width: 100%;
+        flex-direction: row;
+    }
+    
+    .manager-section {
+        grid-template-columns: 1fr;
+    }
+}

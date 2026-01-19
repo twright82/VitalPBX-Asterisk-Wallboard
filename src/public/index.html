@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Center Wallboard</title>
+    <link rel="stylesheet" href="css/wallboard.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body>
+    <div class="wallboard" id="wallboard">
+        
+        <!-- Top Row -->
+        <div class="top-row">
+            <!-- Total Waiting -->
+            <div class="queue-total" id="queueTotal">
+                <div class="big-num" id="totalWaiting">0</div>
+                <div class="info">
+                    <div class="label">Calls Waiting</div>
+                    <div class="wait-time" id="longestWait">0:00</div>
+                    <div class="label">Longest Wait</div>
+                </div>
+            </div>
+            
+            <!-- Queue Cards -->
+            <div class="queue-cards" id="queueCards">
+                <!-- Populated by JavaScript -->
+            </div>
+            
+            <!-- SLA + Callbacks -->
+            <div class="side-boxes">
+                <div class="sla-box">
+                    <div class="label">Service Level</div>
+                    <div class="value" id="slaPercent">100%</div>
+                </div>
+                <div class="callback-box">
+                    <div class="icon">📞</div>
+                    <div>
+                        <div class="count" id="callbackCount">0</div>
+                        <div class="label">Callbacks</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Area -->
+        <div class="main-area">
+            
+            <!-- Agents Panel -->
+            <div class="agents-panel">
+                <div class="panel-header">
+                    <div class="panel-title">👥 Agents</div>
+                    <div class="status-pills" id="statusPills">
+                        <div class="status-pill"><div class="pill-dot available"></div> <span id="countAvailable">0</span></div>
+                        <div class="status-pill"><div class="pill-dot oncall"></div> <span id="countOnCall">0</span></div>
+                        <div class="status-pill"><div class="pill-dot wrapup"></div> <span id="countWrapup">0</span></div>
+                        <div class="status-pill"><div class="pill-dot paused"></div> <span id="countPaused">0</span></div>
+                    </div>
+                </div>
+                
+                <div class="agents-grid" id="agentsGrid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Right Sidebar -->
+            <div class="right-sidebar">
+                
+                <!-- Waiting Calls -->
+                <div class="sidebar-panel">
+                    <div class="title">⏳ Waiting</div>
+                    <div class="waiting-list" id="waitingList">
+                        <div class="empty-message">No calls waiting</div>
+                    </div>
+                </div>
+                
+                <!-- Leaderboard -->
+                <div class="sidebar-panel leaderboard">
+                    <div class="title">🏆 Today's Leaders</div>
+                    <div id="leaderboard">
+                        <div class="empty-message">No calls yet today</div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <!-- Bottom Bar -->
+        <div class="bottom-bar">
+            <span class="brand" id="companyName">Call Center</span>
+            <div class="divider"></div>
+            <div id="queueNumbers">
+                <!-- Populated by JavaScript -->
+            </div>
+            <span class="on-call" id="onCallPerson"></span>
+            <span class="clock" id="clock">--:--</span>
+        </div>
+        
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Connecting...</div>
+    </div>
+    
+    <!-- Connection Error -->
+    <div class="error-overlay" id="errorOverlay" style="display: none;">
+        <div class="error-icon">⚠️</div>
+        <div class="error-text">Connection Lost</div>
+        <div class="error-sub">Reconnecting...</div>
+    </div>
+
+    <script src="js/wallboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard</title>
+    <link rel="stylesheet" href="css/wallboard.css">
+    <link rel="stylesheet" href="css/manager.css">
+</head>
+<body>
+    <div class="dashboard">
+        
+        <!-- Nav Bar -->
+        <nav class="nav-bar">
+            <div class="nav-brand">📊 <span id="companyName">Call Center</span></div>
+            <div class="nav-divider"></div>
+            <div class="nav-tabs">
+                <a href="/" class="nav-tab">Wallboard</a>
+                <a href="/manager.html" class="nav-tab active">Manager</a>
+            </div>
+            <div class="nav-right">
+                <span class="nav-clock" id="clock">--:--</span>
+                <a href="/admin/" class="nav-btn settings">⚙️ Admin</a>
+            </div>
+        </nav>
+        
+        <!-- Top Row -->
+        <div class="top-row">
+            <div class="queue-total" id="queueTotal">
+                <div class="big-num" id="totalWaiting">0</div>
+                <div class="info">
+                    <div class="label">Waiting</div>
+                    <div class="wait-time" id="longestWait">0:00</div>
+                    <div class="label">Longest</div>
+                </div>
+            </div>
+            
+            <div class="queue-cards" id="queueCards"></div>
+            
+            <div class="side-boxes">
+                <div class="stat-box">
+                    <div class="label">SLA</div>
+                    <div class="value" id="slaPercent">100%</div>
+                </div>
+                <div class="stat-box callbacks">
+                    <div class="label">Callbacks</div>
+                    <div class="value" id="callbackCount">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            
+            <!-- Agents Panel -->
+            <div class="panel agents-panel">
+                <div class="panel-header">
+                    <div class="panel-title">👥 Agents</div>
+                    <div class="status-pills" id="statusPills">
+                        <div class="status-pill"><div class="pill-dot available"></div> <span id="countAvailable">0</span></div>
+                        <div class="status-pill"><div class="pill-dot oncall"></div> <span id="countOnCall">0</span></div>
+                        <div class="status-pill"><div class="pill-dot wrapup"></div> <span id="countWrapup">0</span></div>
+                        <div class="status-pill"><div class="pill-dot paused"></div> <span id="countPaused">0</span></div>
+                    </div>
+                </div>
+                
+                <div class="agents-grid" id="agentsGrid"></div>
+            </div>
+            
+            <!-- Right Sidebar -->
+            <div class="right-sidebar">
+                <div class="panel">
+                    <div class="panel-title">⏳ Waiting</div>
+                    <div class="waiting-list" id="waitingList">
+                        <div class="empty-message">No calls waiting</div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-title">🏆 Leaders</div>
+                    <div id="leaderboard">
+                        <div class="empty-message">No calls yet today</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Manager Section -->
+        <div class="manager-section">
+            
+            <!-- Alerts -->
+            <div class="manager-panel">
+                <div class="panel-title">🚨 Alerts</div>
+                <div class="alert-list" id="alertList">
+                    <div class="empty-message">No alerts</div>
+                </div>
+            </div>
+            
+            <!-- Missed Calls -->
+            <div class="manager-panel">
+                <div class="panel-title">📵 Missed Today</div>
+                <div class="missed-list" id="missedList">
+                    <div class="empty-message">No missed calls</div>
+                </div>
+            </div>
+            
+            <!-- Repeat Callers -->
+            <div class="manager-panel">
+                <div class="panel-title">🔄 Repeat Callers</div>
+                <div class="repeat-list" id="repeatList">
+                    <div class="empty-message">None flagged</div>
+                </div>
+            </div>
+            
+            <!-- Daily Stats -->
+            <div class="manager-panel">
+                <div class="panel-title">📊 Today</div>
+                <div class="stats-grid" id="dailyStats">
+                    <div class="stat-item">
+                        <div class="value" id="statTotal">0</div>
+                        <div class="label">Total</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value good" id="statAnswered">0</div>
+                        <div class="label">Answered</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value" id="statAbandoned">0</div>
+                        <div class="label">Abandoned</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value" id="statAbandonRate">0%</div>
+                        <div class="label">Abandon %</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value" id="statAvgHandle">0:00</div>
+                        <div class="label">Avg Handle</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value" id="statAvgWait">0:00</div>
+                        <div class="label">Avg Wait</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Bar -->
+        <div class="bottom-bar">
+            <span id="companyNameBottom">Call Center</span>
+            <div class="divider"></div>
+            <div id="queueNumbers"></div>
+            <span class="on-call" id="onCallPerson"></span>
+        </div>
+        
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Connecting...</div>
+    </div>
+
+    <script src="js/wallboard.js"></script>
+    <script src="js/manager.js"></script>
+</body>
+</html>

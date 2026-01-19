@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ${INSTANCE_NAME:-wallboard}-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:80"
+    volumes:
+      - ../src:/var/www/html
+      - ../logs:/var/log/wallboard
+      - uploads:/var/www/html/uploads
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${DB_NAME:-wallboard}
+      - DB_USER=${DB_USER:-wallboard}
+      - DB_PASS=${DB_PASS:-wallboard_secret}
+      - TZ=${TIMEZONE:-America/Chicago}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - wallboard-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/api/health.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  db:
+    image: mysql:8.0
+    container_name: ${INSTANCE_NAME:-wallboard}-db
+    restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/mysql
+      - ../src/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASS:-root_secret}
+      - MYSQL_DATABASE=${DB_NAME:-wallboard}
+      - MYSQL_USER=${DB_USER:-wallboard}
+      - MYSQL_PASSWORD=${DB_PASS:-wallboard_secret}
+      - TZ=${TIMEZONE:-America/Chicago}
+    networks:
+      - wallboard-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASS:-root_secret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  daemon:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ${INSTANCE_NAME:-wallboard}-daemon
+    restart: unless-stopped
+    command: php /var/www/html/daemon/wallboard-daemon.php start --debug
+    volumes:
+      - ../src:/var/www/html
+      - ../logs:/var/log/wallboard
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${DB_NAME:-wallboard}
+      - DB_USER=${DB_USER:-wallboard}
+      - DB_PASS=${DB_PASS:-wallboard_secret}
+      - TZ=${TIMEZONE:-America/Chicago}
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    networks:
+      - wallboard-net
+    healthcheck:
+      test: ["CMD", "php", "/var/www/html/daemon/healthcheck.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  db_data:
+  uploads:
+
+networks:
+  wallboard-net:
+    driver: bridge
