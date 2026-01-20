@@ -60,6 +60,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'team' => trim($_POST['team']) ?: null,
                 'active' => isset($_POST['is_active']) ? 1 : 0
             ]);
+            // Also sync to agent_status
+            $displayName = trim($_POST['first_name']) . ' ' . trim($_POST['last_name']);
+            if (isset($_POST['is_active']) && $_POST['is_active']) {
+                $db->execute("
+                    INSERT INTO agent_status (extension, agent_name, status)
+                    VALUES (:ext, :name, 'offline')
+                    ON DUPLICATE KEY UPDATE agent_name = :name2
+                ", [
+                    'ext' => trim($_POST['extension']),
+                    'name' => $displayName,
+                    'name2' => $displayName
+                ]);
+            }
             $message = 'Extension updated successfully';
             
         } elseif ($action === 'delete') {
