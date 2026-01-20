@@ -698,3 +698,12 @@ body {
     margin-top: -5px;
     letter-spacing: 1px;
 }
+
+/* Status pill labels */
+.status-pill .pill-label {
+    font-size: 0.7rem;
+    color: #aaa;
+    margin-left: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
