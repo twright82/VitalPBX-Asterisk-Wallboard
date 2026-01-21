@@ -710,3 +710,27 @@ body {
 
 .sla-box .sla-target { font-size: 0.8rem; color: #888; margin-top: 5px; }
 
+
+/* Queue stats line */
+.queue-card .queue-stats {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 5px;
+}
+.queue-card .queue-stats:empty {
+    display: none;
+}
+
+/* Make waiting indicator more prominent */
+.queue-card .wait {
+    font-size: 14px !important;
+    font-weight: 600;
+}
+
+/* Waiting indicator when calls are in queue */
+.queue-card.has-calls .wait,
+.queue-card.critical .wait {
+    font-size: 18px !important;
+    font-weight: 700;
+    color: #fbbf24;
+}

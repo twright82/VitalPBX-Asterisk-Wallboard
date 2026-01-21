@@ -139,17 +139,22 @@ class Wallboard {
                 cardClass += ' has-calls';
             }
             
-            // Show calls today when no one waiting, otherwise show waiting count
-            const mainNumber = queue.calls_waiting > 0 ? queue.calls_waiting : queue.calls_today;
-            const mainLabel = queue.calls_waiting > 0 ? "waiting" : "today";
+            // Always show calls today as main number, waiting shown separately
             const avgWait = this.formatDuration(queue.avg_wait || 0);
+            const abandoned = queue.abandoned_today || 0;
+            const answered = queue.answered_today || 0;
+            const statsLine = `Ans: ${answered}` + (abandoned > 0 ? ` · Abd: ${abandoned}` : '');
+            const waitingLine = queue.calls_waiting > 0 
+                ? `⏳ ${queue.calls_waiting} waiting (${this.formatDuration(queue.longest_wait)})` 
+                : `Avg: ${avgWait}`;
             
             return `
                 <div class="${cardClass}" data-queue="${queue.queue_number}" title="${queue.display_name} - Waiting: ${queue.calls_waiting}, Today: ${queue.calls_today}, Answered: ${queue.answered_today}, Abandoned: ${queue.abandoned_today}, Avg Wait: ${avgWait}">
                     <div class="name">${this.escapeHtml(queue.display_name)}</div>
-                    <div class="count">${mainNumber}</div>
-                    <div class="queue-label">${mainLabel}</div>
-                    <div class="wait">${queue.calls_waiting > 0 ? "Max: " + this.formatDuration(queue.longest_wait) : "Avg: " + avgWait}</div>
+                    <div class="count">${queue.calls_today}</div>
+                    <div class="queue-label">today</div>
+                    <div class="queue-stats">${statsLine}</div>
+                    <div class="wait">${waitingLine}</div>
                 </div>
             `;
         }).join('');

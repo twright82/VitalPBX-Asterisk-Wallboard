@@ -173,6 +173,10 @@ class EventHandler {
         ");
         $stmt->execute([$uid, $callerNum, $callerName, $queue, $queue]);
         
+        // Increment calls_today for the queue
+        $stmt = $this->db->prepare("UPDATE queue_stats_realtime SET calls_today = calls_today + 1 WHERE queue_number = ?");
+        $stmt->execute([$queue]);
+        
         $this->updateQueueStats($queue);
         if ($callerNum) $this->trackRepeatCaller($callerNum, $callerName, $queue);
     }
@@ -195,7 +199,13 @@ class EventHandler {
         
         $stmt = $this->db->prepare("UPDATE calls SET status = 'abandoned', wait_time = ?, ended_at = NOW() WHERE unique_id = ?");
         $stmt->execute([$wait, $uid]);
-        if ($queue) $this->updateQueueStats($queue);
+        
+        // Increment abandoned_today for the queue
+        if ($queue) {
+            $stmtAbd = $this->db->prepare("UPDATE queue_stats_realtime SET abandoned_today = abandoned_today + 1 WHERE queue_number = ?");
+            $stmtAbd->execute([$queue]);
+            $this->updateQueueStats($queue);
+        }
     }
     
     // === AGENT EVENTS ===
@@ -242,7 +252,12 @@ class EventHandler {
         ");
         $stmt->execute([$uid, $caller, $callerName, $ext]);
         
-        if ($queue) $this->updateQueueStats($queue);
+        // Increment answered_today for the queue
+        if ($queue) {
+            $stmtAns = $this->db->prepare("UPDATE queue_stats_realtime SET answered_today = answered_today + 1 WHERE queue_number = ?");
+            $stmtAns->execute([$queue]);
+            $this->updateQueueStats($queue);
+        }
     }
     
     private function onAgentComplete($e) {
