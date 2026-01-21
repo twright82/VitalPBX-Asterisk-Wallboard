@@ -72,6 +72,19 @@ try {
         $queue['wait_class'] = wait_time_class($queue['longest_wait']);
     }
     
+    // Get accurate totals directly from calls table
+    $actualTotals = $db->fetchOne("
+        SELECT 
+            COUNT(*) as total_calls,
+            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as answered,
+            SUM(CASE WHEN status = 'abandoned' THEN 1 ELSE 0 END) as abandoned
+        FROM calls 
+        WHERE DATE(created_at) = CURDATE()
+    ");
+    $totalCalls = $actualTotals['total_calls'] ?? 0;
+    $totalAnswered = $actualTotals['answered'] ?? 0;
+    $totalAbandoned = $actualTotals['abandoned'] ?? 0;
+    
     // Calculate overall SLA
     $overallSla = $totalAnswered > 0 ? calculate_sla() : 100;
     

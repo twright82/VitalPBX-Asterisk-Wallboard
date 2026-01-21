@@ -734,3 +734,27 @@ body {
     font-weight: 700;
     color: #fbbf24;
 }
+
+/* Abandoned box styling */
+.abandoned-box {
+    background: linear-gradient(145deg, #1a1a2e 0%, #0f0f1a 100%);
+    border-radius: 12px;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-left: 4px solid #ef4444;
+}
+.abandoned-box .icon {
+    font-size: 28px;
+}
+.abandoned-box .count {
+    font-size: 32px;
+    font-weight: 800;
+    color: #ef4444;
+}
+.abandoned-box .label {
+    font-size: 11px;
+    color: #64748b;
+    text-transform: uppercase;
+}
