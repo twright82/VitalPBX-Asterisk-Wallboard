@@ -62,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     business_hours_end = :hours_end,
                     wrapup_time = :wrapup,
                     ring_timeout = :ring_timeout,
+                    sla_threshold = :sla_threshold,
                     repeat_caller_days = :repeat_days,
                     repeat_caller_threshold = :repeat_threshold,
                     data_retention_days = :retention
@@ -73,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'hours_end' => $_POST['business_hours_end'],
                 'wrapup' => (int) $_POST['wrapup_time'],
                 'ring_timeout' => (int) $_POST['ring_timeout'],
+                'sla_threshold' => (int) $_POST['sla_threshold'],
                 'repeat_days' => (int) $_POST['repeat_caller_days'],
                 'repeat_threshold' => (int) $_POST['repeat_caller_threshold'],
                 'retention' => (int) $_POST['data_retention_days']
@@ -232,6 +234,13 @@ $timezones = [
                     <input type="number" id="ring_timeout" name="ring_timeout" min="5" max="120"
                            value="<?= htmlspecialchars($companyConfig['ring_timeout'] ?? '20') ?>">
                     <div class="help-text">Time before considering a call "missed"</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sla_threshold">SLA Threshold (seconds)</label>
+                    <input type="number" id="sla_threshold" name="sla_threshold" min="10" max="120"
+                           value="<?= htmlspecialchars($companyConfig['sla_threshold'] ?? '30') ?>">
+                    <div class="help-text">Calls answered within this time count toward SLA %</div>
                 </div>
                 
                 <div class="form-group">

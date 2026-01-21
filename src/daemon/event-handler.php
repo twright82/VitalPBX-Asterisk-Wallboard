@@ -40,7 +40,7 @@ class EventHandler {
         }
         $line .= "\n";
         
-        if ($this->debug) echo $line;
+        if ($this->debug || $level === 'EVENT') echo $line;
         if ($this->logFile) @file_put_contents($this->logFile, $line, FILE_APPEND);
     }
     
@@ -125,6 +125,7 @@ class EventHandler {
                 case 'QueueMember': $this->onQueueMemberResponse($event); break;
                 case 'QueueEntry': $this->onQueueEntry($event); break;
                 case 'Hangup': $this->onHangup($event); break;
+                case 'HangupRequest': $this->onHangupRequest($event); break;
                 case 'DialBegin': $this->onDialBegin($event); break;
                 case 'Newchannel': $this->onNewchannel($event); break;
                 case 'DialEnd': $this->onDialEnd($event); break;
@@ -205,9 +206,10 @@ class EventHandler {
         $callerName = $this->getCallerName($e);
         if (!$ext) return;
         
-        $this->log("Agent $ext ringing for $caller", 'EVENT');
-        $stmt = $this->db->prepare("UPDATE agent_status SET status = 'ringing', status_since = NOW(), talking_to = ? WHERE extension = ?");
-        $stmt->execute([$caller, $ext]);
+        $displayName = $callerName ?: $caller;
+        $this->log("Agent $ext ringing for $displayName", 'EVENT');
+        $stmt = $this->db->prepare("UPDATE agent_status SET status = 'ringing', status_since = NOW(), talking_to = ?, talking_to_name = ? WHERE extension = ?");
+        $stmt->execute([$caller, $callerName, $ext]);
     }
     
     private function onAgentConnect($e) {
@@ -361,9 +363,55 @@ class EventHandler {
         $ext = $this->extractExt($this->getChannel($e));
         if (!$ext || !isset($this->monitoredExtensions[$ext])) return;
         
-        // Reset agent to available after brief delay (handled by wrapup timer)
+        // Clear agent call info when call ends
+        $this->log("Agent $ext hung up - clearing call info", "EVENT");
+        
+        $stmt = $this->db->prepare("
+            UPDATE agent_status 
+            SET status = 'available',
+                current_call_id = NULL,
+                current_call_type = NULL,
+                talking_to = NULL,
+                talking_to_name = NULL,
+                brand_tag = NULL,
+                call_started_at = NULL,
+                status_since = NOW()
+            WHERE extension = ?
+        ");
+        $stmt->execute([$ext]);
+        
+        // Also complete any answered calls for this agent that havent ended
+        $stmt2 = $this->db->prepare("
+            UPDATE calls 
+            SET status = 'completed',
+                ended_at = NOW(),
+                talk_time = TIMESTAMPDIFF(SECOND, answered_at, NOW())
+            WHERE agent_extension = ? 
+            AND status = 'answered'
+        ");
+        $stmt2->execute([$ext]);
     }
     
+    private function onHangupRequest($e) {
+        // When caller hangs up, clear their waiting call
+        $uid = $this->getUniqueId($e);
+        $callerNum = $this->getCallerNum($e);
+        
+        if (!$uid) return;
+        
+        // Check if this is a waiting call that was abandoned
+        $stmt = $this->db->prepare("
+            UPDATE calls 
+            SET status = 'abandoned', ended_at = NOW() 
+            WHERE unique_id = ? AND status = 'waiting'
+        ");
+        $stmt->execute([$uid]);
+        
+        if ($stmt->rowCount() > 0) {
+            $this->log("Caller abandoned: $callerNum (HangupRequest)", "EVENT");
+        }
+    }
+
     private function onDeviceState($e) {
         $device = $this->getField($e, ['Device', 'Exten']);
         $ext = $this->extractExt($device);

@@ -196,7 +196,7 @@ function calculate_sla($queueNumber = null, $date = null) {
         $sql = "
             SELECT 
                 COUNT(*) as total,
-                SUM(CASE WHEN wait_time <= 30 THEN 1 ELSE 0 END) as within_sla
+                SUM(CASE WHEN wait_time <= (SELECT COALESCE(sla_threshold, 30) FROM company_config LIMIT 1) THEN 1 ELSE 0 END) as within_sla
             FROM calls 
             WHERE status = 'completed'
         ";

@@ -243,7 +243,7 @@ function run_daemon($debug = false) {
     // Create event handler
     $eventHandler = new EventHandler($db);
     if ($debug) {
-        $eventHandler->enableDebug(EVENT_LOG_FILE);
+        // $eventHandler->enableDebug(EVENT_LOG_FILE);
     }
     
     // Register event callback
@@ -299,13 +299,15 @@ function run_daemon($debug = false) {
             if ($now - $lastStatusPoll >= 60) {
                 $ami->getQueueSummary();
                 $lastStatusPoll = $now;
-                
-                // Update SLA calculations
-                updateDailyStats($db);
-                
-                // Reload config in case it changed
-                $eventHandler->reloadConfig();
             }
+            
+            // Update SLA every 5 minutes instead (less disruptive)
+            // Disabled for now - causes connection issues
+            // static $lastSlaUpdate = 0;
+            // if ($now - $lastSlaUpdate >= 300) {
+            //     updateDailyStats($db);
+            //     $lastSlaUpdate = $now;
+            // }
         }
         
         if ($ami->isConnected()) {

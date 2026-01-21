@@ -166,7 +166,7 @@ try {
     foreach ($callsWaiting as &$call) {
         $call['wait_class'] = wait_time_class($call['wait_time']);
         $call['wait_formatted'] = format_duration($call['wait_time']);
-        $call['caller_formatted'] = format_phone($call['caller_number']);
+        $call["caller_formatted"] = $call["caller_name"] ?: format_phone($call["caller_number"]);
     }
     
     // Get callbacks

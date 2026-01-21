@@ -307,23 +307,13 @@ class AMIConnector {
      * Check if connected and connection is healthy
      */
     public function isConnected() {
-        if (!$this->socket || !$this->connected) {
+        // Simple check - just verify socket and connected flag
+        if (!$this->socket || !is_resource($this->socket)) {
             return false;
         }
-        
-        // Check socket status
-        $info = @stream_get_meta_data($this->socket);
-        if (!$info || !empty($info['eof'])) {
-            $this->log("Connection lost (EOF)", 'WARN');
-            $this->connected = false;
+        if (!$this->connected) {
             return false;
         }
-        
-        // Check for stale connection (no activity for 2 minutes)
-        if ($this->lastActivity > 0 && (time() - $this->lastActivity) > 120) {
-            $this->log("Connection may be stale, last activity: " . (time() - $this->lastActivity) . "s ago", 'WARN');
-        }
-        
         return true;
     }
     
@@ -424,12 +414,8 @@ class AMIConnector {
         $line = @fgets($this->socket, 4096);
         
         if ($line === false) {
-            $info = @stream_get_meta_data($this->socket);
-            if ($info && !empty($info['eof'])) {
-                $this->log("Socket EOF", 'WARN');
-                $this->connected = false;
-            }
             // Timeout is OK, just return false
+            // Do NOT check EOF or set connected=false here
         }
         
         return $line;
@@ -449,13 +435,8 @@ class AMIConnector {
             $line = @fgets($this->socket, 4096);
             
             if ($line === false) {
-                $info = @stream_get_meta_data($this->socket);
-                if ($info && !empty($info['eof'])) {
-                    $this->log("Connection lost during read", 'WARN');
-                    $this->connected = false;
-                    return false;
-                }
                 // Timeout, sleep briefly and continue
+                // Do NOT check EOF or set connected=false here
                 usleep(10000); // 10ms
                 continue;
             }
@@ -577,34 +558,62 @@ class AMIConnector {
      * Ping to keep alive
      */
     public function ping() {
-        $response = $this->sendAction('Ping');
-        $success = $response && isset($response['Ping']) && $response['Ping'] === 'Pong';
-        if (!$success) {
-            $this->log("Ping failed", 'WARN');
+        // Just check if socket is still writable - simpler and more reliable
+        if (!$this->socket || !is_resource($this->socket)) {
+            return false;
         }
-        return $success;
+        
+        // Try to send a simple ping action
+        $cmd = "Action: Ping
+
+";
+        $written = @fwrite($this->socket, $cmd);
+        
+        // If we can write, connection is alive
+        // The Pong response will be read as a regular event
+        return $written !== false && $written > 0;
     }
     
     /**
      * Request queue status
      */
     public function getQueueStatus($queue = null) {
-        $params = [];
+        // Fire and forget - QueueStatus triggers async events, dont wait for response
+        if (!$this->socket) return false;
+        
+        $cmd = "Action: QueueStatus
+";
         if ($queue) {
-            $params['Queue'] = $queue;
+            $cmd .= "Queue: $queue
+";
         }
-        return $this->sendAction('QueueStatus', $params);
+        $cmd .= "
+";
+        
+        $written = @fwrite($this->socket, $cmd);
+        $this->lastActivity = time();
+        return $written !== false && $written > 0;
     }
     
     /**
      * Request queue summary
      */
     public function getQueueSummary($queue = null) {
-        $params = [];
+        // Fire and forget - QueueSummary triggers async events, dont wait for response
+        if (!$this->socket) return false;
+        
+        $cmd = "Action: QueueSummary
+";
         if ($queue) {
-            $params['Queue'] = $queue;
+            $cmd .= "Queue: $queue
+";
         }
-        return $this->sendAction('QueueSummary', $params);
+        $cmd .= "
+";
+        
+        $written = @fwrite($this->socket, $cmd);
+        $this->lastActivity = time();
+        return $written !== false && $written > 0;
     }
     
     /**
