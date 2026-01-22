@@ -239,12 +239,15 @@ class EventHandler {
         
         $this->log("Agent $ext connected to $caller (wait: {$wait}s)", 'EVENT');
         
+        // Update by caller+queue since Asterisk gives different unique_id on connect
         $stmt = $this->db->prepare("
             UPDATE calls SET status = 'answered', agent_extension = ?, 
             agent_name = (SELECT display_name FROM extensions WHERE extension = ?),
-            wait_time = ?, answered_at = NOW() WHERE unique_id = ?
+            wait_time = ?, answered_at = NOW() 
+            WHERE caller_number = ? AND queue_number = ? AND status = 'waiting'
+            ORDER BY entered_queue_at DESC LIMIT 1
         ");
-        $stmt->execute([$ext, $ext, $wait, $uid]);
+        $stmt->execute([$ext, $ext, $wait, $caller, $queue]);
         
         $stmt = $this->db->prepare("
             UPDATE agent_status SET status = 'on_call', status_since = NOW(), 

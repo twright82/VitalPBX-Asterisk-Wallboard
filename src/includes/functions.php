@@ -26,6 +26,17 @@ function format_duration($seconds) {
  * Format phone number for display
  */
 function format_phone($number) {
+    // Handle brand prefix format: #31=BW, #32=OL, #33=XL, #34=DCB
+    // Example: #328013882222 -> (801) 388-2222
+    if (preg_match('/^#(31|32|33|34)(\d{10})$/', $number, $matches)) {
+        $digits = $matches[2];
+        return sprintf("(%s) %s-%s", 
+            substr($digits, 0, 3),
+            substr($digits, 3, 3),
+            substr($digits, 6)
+        );
+    }
+    
     // Remove non-digits
     $digits = preg_replace('/\D/', '', $number);
     
@@ -39,7 +50,7 @@ function format_phone($number) {
     }
     
     if (strlen($digits) === 11 && $digits[0] === '1') {
-        return sprintf("+1 (%s) %s-%s", 
+        return sprintf("(%s) %s-%s", 
             substr($digits, 1, 3),
             substr($digits, 4, 3),
             substr($digits, 7)
