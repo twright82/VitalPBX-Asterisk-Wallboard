@@ -210,7 +210,8 @@ class Wallboard {
             
             // Build stats line
             const talkTimeFormatted = this.formatDuration(agent.talk_time_today || 0);
-            const statsHtml = `<div class="agent-stats">📞 ${agent.calls_today || 0} calls · ⏱️ ${talkTimeFormatted}${agent.missed_today ? ` · ❌ ${agent.missed_today} missed` : ""}</div>`;
+            const avgHandleFormatted = this.formatDuration(agent.avg_handle_time || 0);
+            const statsHtml = `<div class="agent-stats">📞 ${agent.calls_today || 0} calls · ⏱️ ${talkTimeFormatted} · 📊 ${avgHandleFormatted} avg${agent.missed_today ? ` · ❌ ${agent.missed_today} missed` : ""}</div>`;
             return `
                 <div class="${cardClass}" data-extension="${agent.extension}">
                     <div class="agent-row-top">

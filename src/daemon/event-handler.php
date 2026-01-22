@@ -277,9 +277,11 @@ class EventHandler {
         $stmt = $this->db->prepare("
             UPDATE agent_status SET status = 'available', status_since = NOW(), 
             current_call_id = NULL, talking_to = NULL, call_started_at = NULL,
-            calls_today = calls_today + 1, talk_time_today = talk_time_today + ? WHERE extension = ?
+            calls_today = calls_today + 1, talk_time_today = talk_time_today + ?,
+            avg_handle_time = (talk_time_today + ?) / (calls_today + 1)
+            WHERE extension = ?
         ");
-        $stmt->execute([$talk, $ext]);
+        $stmt->execute([$talk, $talk, $ext]);
     }
     
     private function onAgentRingNoAnswer($e) {
@@ -477,14 +479,33 @@ class EventHandler {
         $waiting = $result['waiting_count'] ?? 0;
         $longestWait = $result['longest_wait'] ?? 0;
         
+        // Calculate average wait and talk times for today
+        $stmt = $this->db->prepare("
+            SELECT 
+                COALESCE(AVG(wait_time), 0) as avg_wait,
+                COALESCE(AVG(talk_time), 0) as avg_talk
+            FROM calls 
+            WHERE queue_number = ? 
+            AND DATE(created_at) = CURDATE()
+            AND status IN ('completed', 'answered')
+            AND wait_time IS NOT NULL
+        ");
+        $stmt->execute([$queue]);
+        $avgResult = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $avgWait = round($avgResult['avg_wait'] ?? 0);
+        $avgTalk = round($avgResult['avg_talk'] ?? 0);
+        
         $stmt = $this->db->prepare("
             UPDATE queue_stats_realtime 
-            SET calls_waiting = ?, longest_wait_seconds = ?, updated_at = NOW() 
+            SET calls_waiting = ?, longest_wait_seconds = ?, 
+                avg_wait_today = ?, avg_talk_today = ?,
+                updated_at = NOW() 
             WHERE queue_number = ?
         ");
-        $stmt->execute([$waiting, $longestWait, $queue]);
+        $stmt->execute([$waiting, $longestWait, $avgWait, $avgTalk, $queue]);
         
-        $this->log("Queue $queue stats: $waiting waiting, longest wait: $longestWait sec", 'DEBUG');
+        $this->log("Queue $queue stats: $waiting waiting, longest wait: $longestWait sec, avg wait: $avgWait sec", 'DEBUG');
     }
     
     private function trackRepeatCaller($number, $name, $queue) {
