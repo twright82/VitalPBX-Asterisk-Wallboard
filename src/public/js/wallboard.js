@@ -6,7 +6,6 @@
 class Wallboard {
     constructor() {
         this.refreshRate = 5000; // 5 seconds
-        this.wrapupTime = 60;
         this.queues = {};
         this.data = null;
         this.connected = false;
@@ -51,7 +50,6 @@ class Wallboard {
             
             // Update config
             if (data.config) {
-                this.wrapupTime = data.config.wrapup_time || 60;
                 this.refreshRate = (data.config.refresh_rate || 5) * 1000;
             }
             
@@ -119,7 +117,6 @@ class Wallboard {
         const counts = this.data.agent_counts;
         document.getElementById('countAvailable').textContent = counts.available || 0;
         document.getElementById('countOnCall').textContent = counts.on_call || 0;
-        document.getElementById('countWrapup').textContent = counts.wrapup || 0;
         document.getElementById('countPaused').textContent = counts.paused || 0;
     }
     
@@ -177,10 +174,6 @@ class Wallboard {
             let timerHtml = '';
             if ((agent.status === 'on_call' || agent.status === 'ringing') && agent.call_started_at) {
                 timerHtml = `<div class="agent-timer" data-start="${agent.call_started_at}">${this.formatDuration(agent.call_duration)}</div>`;
-            } else if (agent.status === 'wrapup') {
-                const remaining = Math.max(0, this.wrapupTime - agent.status_duration);
-                const ending = remaining < 15 ? ' ending' : '';
-                timerHtml = `<div class="agent-timer wrapup${ending}" data-wrapup="${agent.status_duration}">${remaining}</div>`;
             }
             
             // Build status text
@@ -197,8 +190,6 @@ class Wallboard {
                 const ringIcon = agent.current_call_type === 'outbound' ? '📤 Dialing: ' : '📞 ';
                 const ringInfo = agent.talking_to_name || this.formatPhone(agent.talking_to) || 'Incoming';
                 statusHtml = `<div class="agent-status ringing">${ringIcon}${ringInfo}</div>`;
-            } else if (agent.status === 'wrapup') {
-                statusHtml = '<div class="agent-status wrapup">⏱️ Wrap-up</div>';
             } else if (agent.status === 'paused') {
                 const reason = agent.pause_reason || 'Paused';
                 statusHtml = `<div class="agent-status paused">☕ ${this.escapeHtml(reason)}</div>`;
@@ -307,40 +298,6 @@ class Wallboard {
                 const startTime = new Date(start).getTime();
                 const duration = Math.floor((Date.now() - startTime) / 1000);
                 el.textContent = this.formatDuration(duration);
-            }
-        });
-        
-        // Update wrapup timers
-        document.querySelectorAll('.agent-timer[data-wrapup]').forEach(el => {
-            let elapsed = parseInt(el.dataset.wrapup) || 0;
-            elapsed++;
-            el.dataset.wrapup = elapsed;
-            
-            const remaining = Math.max(0, this.wrapupTime - elapsed);
-            el.textContent = remaining;
-            
-            if (remaining < 15) {
-                el.classList.add('ending');
-            }
-        });
-        
-        // Update waiting call timers
-        document.querySelectorAll('.waiting-item .time[data-entered]').forEach(el => {
-            const entered = el.dataset.entered;
-            if (entered) {
-                const enteredTime = new Date(entered).getTime();
-                const waitTime = Math.floor((Date.now() - enteredTime) / 1000);
-                el.textContent = this.formatDuration(waitTime);
-                
-                // Update class
-                el.classList.remove('ok', 'warning', 'critical');
-                if (waitTime >= 120) {
-                    el.classList.add('critical');
-                } else if (waitTime >= 30) {
-                    el.classList.add('warning');
-                } else {
-                    el.classList.add('ok');
-                }
             }
         });
     }

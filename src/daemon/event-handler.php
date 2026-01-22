@@ -272,7 +272,7 @@ class EventHandler {
         $stmt->execute([$talk, $uid]);
         
         $stmt = $this->db->prepare("
-            UPDATE agent_status SET status = 'wrapup', status_since = NOW(), 
+            UPDATE agent_status SET status = 'available', status_since = NOW(), 
             current_call_id = NULL, talking_to = NULL, call_started_at = NULL,
             calls_today = calls_today + 1, talk_time_today = talk_time_today + ? WHERE extension = ?
         ");
