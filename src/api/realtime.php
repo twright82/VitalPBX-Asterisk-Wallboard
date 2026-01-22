@@ -140,8 +140,8 @@ try {
     
     // Get queue membership for each agent
     $memberships = $db->fetchAll("
-        SELECT extension, queue_number, is_signed_in, is_paused
-        FROM agent_queue_membership
+        SELECT m.extension, m.queue_number, m.is_signed_in, m.is_paused
+        FROM agent_queue_membership m INNER JOIN queues q ON m.queue_number = q.queue_number WHERE q.is_active = 1
     ");
     
     $agentQueues = [];

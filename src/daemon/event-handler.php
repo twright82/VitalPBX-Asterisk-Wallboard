@@ -366,7 +366,22 @@ class EventHandler {
     }
     
     private function onQueueMemberResponse($e) {
-        // Same handling as QueueMemberStatus
+        $queue = $this->getQueue($e);
+        $ext = $this->extractExt($this->getMember($e));
+        $paused = $this->getField($e, ['Paused'], '0') === '1';
+        $pauseReason = $this->getField($e, ['PausedReason'], null);
+        
+        if (!$ext || !$queue) return;
+        
+        // Insert/update queue membership
+        $stmt = $this->db->prepare("
+            INSERT INTO agent_queue_membership (extension, queue_number, is_signed_in, is_paused, pause_reason, updated_at)
+            VALUES (?, ?, 1, ?, ?, NOW())
+            ON DUPLICATE KEY UPDATE is_signed_in = 1, is_paused = ?, pause_reason = ?, updated_at = NOW()
+        ");
+        $stmt->execute([$ext, $queue, $paused ? 1 : 0, $pauseReason, $paused ? 1 : 0, $pauseReason]);
+        
+        // Also update agent status
         $this->onQueueMemberStatus($e);
     }
     

@@ -199,11 +199,13 @@ class Wallboard {
             }
             
             // Build queue badges
-            const queueBadges = Object.entries(agent.queues || {}).map(([queueNum, membership]) => {
-                const queue = this.queues[queueNum];
-                const name = queue ? queue.display_name : queueNum;
-                const badgeClass = membership.signed_in ? 'q-badge in' : 'q-badge out';
-                return `<span class="${badgeClass}">${this.escapeHtml(name)}</span>`;
+            // Show all tracked queues - green if signed in, gray if not
+            const allQueues = Object.values(this.queues || {});
+            const queueBadges = allQueues.map(queue => {
+                const membership = (agent.queues || {})[queue.queue_number];
+                const isSignedIn = membership && membership.signed_in;
+                const badgeClass = isSignedIn ? 'q-badge in' : 'q-badge out';
+                return `<span class="${badgeClass}">${this.escapeHtml(queue.display_name)}</span>`;
             }).join('');
             
             // Build stats line
