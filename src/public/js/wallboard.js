@@ -112,6 +112,7 @@ class Wallboard {
         // Callbacks
         document.getElementById('callbackCount').textContent = summary.callbacks_waiting || 0;
         document.getElementById('abandonedCount').textContent = summary.abandoned_today || 0;
+        document.getElementById('totalCallsCount').textContent = summary.total_calls_today || 0;
         
         // Agent counts
         const counts = this.data.agent_counts;
