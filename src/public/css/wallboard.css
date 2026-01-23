@@ -981,6 +981,19 @@ body {
     font-style: italic;
 }
 
+.trophy-zinger {
+    font-size: 18px;
+    color: #f97316;
+    margin-top: 20px;
+    font-weight: 600;
+    animation: zingerPulse 1s ease-in-out infinite;
+}
+
+@keyframes zingerPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+}
+
 /* Eric Easter Egg */
 .eric-content {
     text-align: center;

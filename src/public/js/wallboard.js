@@ -82,6 +82,9 @@ class Wallboard {
     }
 
     showTrophyEasterEgg() {
+        // Play triumphant fanfare
+        this.playVictoryFanfare();
+
         // Create overlay
         const overlay = document.createElement('div');
         overlay.className = 'easter-egg-overlay trophy-overlay';
@@ -91,6 +94,7 @@ class Wallboard {
                 <div class="trophy-icon">🏆</div>
                 <div class="trophy-message">Built by Tim Wright</div>
                 <div class="trophy-subtitle">The Greatest Wallboard Ever Created. Tremendous.</div>
+                <div class="trophy-zinger">Other wallboards wish they had this energy.</div>
             </div>
         `;
         document.body.appendChild(overlay);
@@ -111,6 +115,67 @@ class Wallboard {
                 setTimeout(() => overlay.remove(), 500);
             }
         }, 6000);
+    }
+
+    playVictoryFanfare() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const masterGain = audioCtx.createGain();
+            masterGain.gain.value = 0.3;
+            masterGain.connect(audioCtx.destination);
+
+            // Epic bass drop
+            const bassOsc = audioCtx.createOscillator();
+            const bassGain = audioCtx.createGain();
+            bassOsc.type = 'sawtooth';
+            bassOsc.frequency.setValueAtTime(80, audioCtx.currentTime);
+            bassOsc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.5);
+            bassGain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+            bassGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
+            bassOsc.connect(bassGain);
+            bassGain.connect(masterGain);
+            bassOsc.start();
+            bassOsc.stop(audioCtx.currentTime + 1);
+
+            // Triumphant fanfare notes (C-E-G-C chord progression)
+            const notes = [
+                { freq: 523.25, start: 0.1, dur: 0.3 },    // C5
+                { freq: 659.25, start: 0.2, dur: 0.3 },    // E5
+                { freq: 783.99, start: 0.3, dur: 0.4 },    // G5
+                { freq: 1046.50, start: 0.5, dur: 0.8 },   // C6 (big finish)
+            ];
+
+            notes.forEach(note => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.value = note.freq;
+                gain.gain.setValueAtTime(0, audioCtx.currentTime + note.start);
+                gain.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + note.start + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + note.start + note.dur);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(audioCtx.currentTime + note.start);
+                osc.stop(audioCtx.currentTime + note.start + note.dur);
+            });
+
+            // Airhorn-style accent
+            const hornOsc = audioCtx.createOscillator();
+            const hornGain = audioCtx.createGain();
+            hornOsc.type = 'square';
+            hornOsc.frequency.setValueAtTime(440, audioCtx.currentTime + 0.6);
+            hornOsc.frequency.linearRampToValueAtTime(880, audioCtx.currentTime + 0.7);
+            hornGain.gain.setValueAtTime(0, audioCtx.currentTime + 0.6);
+            hornGain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.65);
+            hornGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
+            hornOsc.connect(hornGain);
+            hornGain.connect(masterGain);
+            hornOsc.start(audioCtx.currentTime + 0.6);
+            hornOsc.stop(audioCtx.currentTime + 1.2);
+
+        } catch (e) {
+            console.log('Audio not supported');
+        }
     }
 
     createConfetti() {
