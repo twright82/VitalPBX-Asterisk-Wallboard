@@ -11,7 +11,13 @@ class Wallboard {
         this.connected = false;
         this.retryCount = 0;
         this.maxRetries = 5;
-        
+
+        // Easter egg counters
+        this.companyNameClicks = 0;
+        this.slaBoxClicks = 0;
+        this.companyNameClickTimer = null;
+        this.slaBoxClickTimer = null;
+
         this.init();
     }
     
@@ -19,15 +25,172 @@ class Wallboard {
         // Start clock
         this.updateClock();
         setInterval(() => this.updateClock(), 1000);
-        
+
         // Start timer updates
         setInterval(() => this.updateTimers(), 1000);
-        
+
+        // Setup easter eggs
+        this.setupEasterEggs();
+
         // Initial fetch
         await this.fetchData();
-        
+
         // Start refresh loop
         setInterval(() => this.fetchData(), this.refreshRate);
+    }
+
+    setupEasterEggs() {
+        // Easter egg 1: Click company name 7 times for trophy message
+        const companyName = document.getElementById('companyName');
+        if (companyName) {
+            companyName.style.cursor = 'pointer';
+            companyName.addEventListener('click', () => {
+                clearTimeout(this.companyNameClickTimer);
+                this.companyNameClicks++;
+
+                if (this.companyNameClicks >= 7) {
+                    this.showTrophyEasterEgg();
+                    this.companyNameClicks = 0;
+                }
+
+                // Reset counter after 3 seconds of no clicks
+                this.companyNameClickTimer = setTimeout(() => {
+                    this.companyNameClicks = 0;
+                }, 3000);
+            });
+        }
+
+        // Easter egg 2: Click SLA box 5 times for Eric typing message
+        const slaBox = document.querySelector('.sla-box');
+        if (slaBox) {
+            slaBox.style.cursor = 'pointer';
+            slaBox.addEventListener('click', () => {
+                clearTimeout(this.slaBoxClickTimer);
+                this.slaBoxClicks++;
+
+                if (this.slaBoxClicks >= 5) {
+                    this.showEricEasterEgg();
+                    this.slaBoxClicks = 0;
+                }
+
+                // Reset counter after 3 seconds of no clicks
+                this.slaBoxClickTimer = setTimeout(() => {
+                    this.slaBoxClicks = 0;
+                }, 3000);
+            });
+        }
+    }
+
+    showTrophyEasterEgg() {
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'easter-egg-overlay trophy-overlay';
+        overlay.innerHTML = `
+            <div class="confetti-container" id="confettiContainer"></div>
+            <div class="trophy-content">
+                <div class="trophy-icon">🏆</div>
+                <div class="trophy-message">Built by Tim Wright</div>
+                <div class="trophy-subtitle">The Greatest Wallboard Ever Created. Tremendous.</div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        // Create confetti
+        this.createConfetti();
+
+        // Close on click
+        overlay.addEventListener('click', () => {
+            overlay.classList.add('fade-out');
+            setTimeout(() => overlay.remove(), 500);
+        });
+
+        // Auto-close after 6 seconds
+        setTimeout(() => {
+            if (overlay.parentNode) {
+                overlay.classList.add('fade-out');
+                setTimeout(() => overlay.remove(), 500);
+            }
+        }, 6000);
+    }
+
+    createConfetti() {
+        const container = document.getElementById('confettiContainer');
+        if (!container) return;
+
+        const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dfe6e9', '#ff7675'];
+
+        for (let i = 0; i < 150; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animationDelay = Math.random() * 3 + 's';
+            confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+
+            // Random shapes
+            if (Math.random() > 0.5) {
+                confetti.style.borderRadius = '50%';
+            }
+
+            container.appendChild(confetti);
+        }
+    }
+
+    showEricEasterEgg() {
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'easter-egg-overlay eric-overlay';
+        overlay.innerHTML = `
+            <div class="eric-content">
+                <div class="eric-bubble">
+                    <span class="eric-text"></span>
+                    <span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const textEl = overlay.querySelector('.eric-text');
+        const dotsEl = overlay.querySelector('.typing-dots');
+
+        // Message sequence
+        const messages = [
+            { text: 'Eric is typing', delay: 2000 },
+            { text: 'Eric is still typing', delay: 2500 },
+            { text: 'Eric has gone to lunch. Again.', final: true, delay: 3000 }
+        ];
+
+        let currentIndex = 0;
+
+        const showNextMessage = () => {
+            if (currentIndex >= messages.length) return;
+
+            const msg = messages[currentIndex];
+            textEl.textContent = msg.text;
+
+            if (msg.final) {
+                dotsEl.style.display = 'none';
+                // Auto-close after showing final message
+                setTimeout(() => {
+                    if (overlay.parentNode) {
+                        overlay.classList.add('fade-out');
+                        setTimeout(() => overlay.remove(), 500);
+                    }
+                }, msg.delay);
+            } else {
+                dotsEl.style.display = 'inline';
+                currentIndex++;
+                setTimeout(showNextMessage, msg.delay);
+            }
+        };
+
+        showNextMessage();
+
+        // Close on click
+        overlay.addEventListener('click', () => {
+            overlay.classList.add('fade-out');
+            setTimeout(() => overlay.remove(), 500);
+        });
     }
     
     async fetchData() {
