@@ -239,10 +239,11 @@ class Wallboard {
     
     render() {
         if (!this.data) return;
-        
+
         this.renderSummary();
         this.renderQueueCards();
         this.renderAgents();
+        this.renderTeamMembers();
         this.renderWaitingCalls();
         this.renderLeaderboard();
         this.renderBottomBar();
@@ -391,7 +392,76 @@ class Wallboard {
             `;
         }).join('');
     }
-    
+
+    renderTeamMembers() {
+        const container = document.getElementById('teamGrid');
+        const panel = document.getElementById('teamPanel');
+        const members = this.data.team_members;
+
+        // Hide panel if no team members
+        if (!members || members.length === 0) {
+            if (panel) panel.style.display = 'none';
+            return;
+        }
+
+        panel.style.display = 'block';
+
+        // Count statuses
+        let available = 0, onCall = 0;
+        members.forEach(m => {
+            if (m.status === 'available') available++;
+            if (m.status === 'on_call' || m.status === 'ringing') onCall++;
+        });
+
+        document.getElementById('teamCountAvailable').textContent = available;
+        document.getElementById('teamCountOnCall').textContent = onCall;
+
+        container.innerHTML = members.map(member => {
+            const cardClass = `team-card ${member.status}`;
+
+            // Build timer
+            let timerHtml = '';
+            if ((member.status === 'on_call' || member.status === 'ringing') && member.call_started_at) {
+                timerHtml = `<div class="team-timer" data-start="${member.call_started_at}">${this.formatDuration(member.call_duration)}</div>`;
+            }
+
+            // Build status text
+            let statusHtml = '';
+            if (member.status === 'available') {
+                statusHtml = '<div class="team-status available">Available</div>';
+            } else if (member.status === 'on_call') {
+                const callIcon = member.current_call_type === 'outbound' ? '📤 ' : '📞 ';
+                const callerDisplay = member.talking_to_name || this.formatPhone(member.talking_to) || 'On call';
+                statusHtml = `<div class="team-status talking">${callIcon}${callerDisplay}</div>`;
+            } else if (member.status === 'ringing') {
+                const ringIcon = member.current_call_type === 'outbound' ? '📤 Dialing: ' : '📞 ';
+                const ringInfo = member.talking_to_name || this.formatPhone(member.talking_to) || 'Incoming';
+                statusHtml = `<div class="team-status ringing">${ringIcon}${ringInfo}</div>`;
+            } else if (member.status === 'paused') {
+                statusHtml = `<div class="team-status paused">☕ ${this.escapeHtml(member.pause_reason || 'Away')}</div>`;
+            } else {
+                statusHtml = `<div class="team-status offline">${member.status || 'Offline'}</div>`;
+            }
+
+            // Team/department badge
+            const deptHtml = member.team ? `<div class="team-dept">${this.escapeHtml(member.team)}</div>` : '';
+
+            return `
+                <div class="${cardClass}" data-extension="${member.extension}">
+                    <div class="team-row-top">
+                        <div>
+                            <div class="team-name">${this.escapeHtml(member.name)}</div>
+                            <div class="team-ext">Ext ${member.extension}</div>
+                        </div>
+                        ${timerHtml}
+                    </div>
+                    ${statusHtml}
+                    ${deptHtml}
+                </div>
+            `;
+        }).join('');
+    }
+
     renderWaitingCalls() {
         const container = document.getElementById('waitingList');
         const calls = this.data.calls_waiting;
@@ -458,8 +528,18 @@ class Wallboard {
     }
     
     updateTimers() {
-        // Update call duration timers
+        // Update call duration timers for agents
         document.querySelectorAll('.agent-timer[data-start]').forEach(el => {
+            const start = el.dataset.start;
+            if (start) {
+                const startTime = new Date(start).getTime();
+                const duration = Math.floor((Date.now() - startTime) / 1000);
+                el.textContent = this.formatDuration(duration);
+            }
+        });
+
+        // Update call duration timers for team members
+        document.querySelectorAll('.team-timer[data-start]').forEach(el => {
             const start = el.dataset.start;
             if (start) {
                 const startTime = new Date(start).getTime();

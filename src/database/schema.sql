@@ -87,11 +87,13 @@ CREATE TABLE `extensions` (
     `last_name` VARCHAR(100) DEFAULT NULL,
     `display_name` VARCHAR(200) GENERATED ALWAYS AS (CONCAT(first_name, ' ', COALESCE(last_name, ''))) STORED,
     `team` VARCHAR(100) DEFAULT NULL,
+    `is_team_member` TINYINT(1) NOT NULL DEFAULT 0,
     `is_active` TINYINT(1) NOT NULL DEFAULT 1,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `extension` (`extension`)
+    UNIQUE KEY `extension` (`extension`),
+    KEY `idx_is_team_member` (`is_team_member`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================

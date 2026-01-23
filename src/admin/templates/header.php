@@ -48,6 +48,9 @@ try {
                 <a href="/admin/extensions.php" class="nav-item <?= $currentPage === 'extensions' ? 'active' : '' ?>">
                     <span class="icon">👥</span> Extensions
                 </a>
+                <a href="/admin/team.php" class="nav-item <?= $currentPage === 'team' ? 'active' : '' ?>">
+                    <span class="icon">🏢</span> Team Members
+                </a>
                 <a href="/admin/alerts.php" class="nav-item <?= $currentPage === 'alerts' ? 'active' : '' ?>">
                     <span class="icon">🚨</span> Alerts
                 </a>

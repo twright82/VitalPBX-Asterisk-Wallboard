@@ -783,6 +783,105 @@ body {
     text-transform: uppercase;
 }
 
+/* ========== TEAM EXTENSIONS PANEL ========== */
+.team-panel {
+    background: linear-gradient(145deg, #12121c 0%, #0a0a10 100%);
+    border-radius: 16px;
+    padding: 15px 20px;
+    margin-top: 12px;
+    border-top: 3px solid #6366f1;
+    flex-shrink: 0;
+}
+
+.team-panel .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 12px;
+}
+
+.team-panel .panel-title {
+    font-size: 16px;
+    color: #818cf8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+}
+
+/* Team Member Card - Compact version of agent card */
+.team-card {
+    background: #1a1a28;
+    border-radius: 8px;
+    padding: 12px;
+    border-left: 4px solid #4ade80;
+    transition: all 0.3s ease;
+}
+
+.team-card.available { border-left-color: #4ade80; }
+.team-card.on_call { border-left-color: #f97316; }
+.team-card.ringing { border-left-color: #fbbf24; animation: ring-pulse 0.5s infinite; }
+.team-card.paused { border-left-color: #6b7280; opacity: 0.6; }
+.team-card.offline { border-left-color: #374151; opacity: 0.4; }
+
+.team-card .team-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+}
+
+.team-card .team-name {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.team-card .team-ext {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.team-card .team-timer {
+    font-family: monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: #f97316;
+}
+
+.team-card .team-status {
+    font-size: 14px;
+}
+
+.team-card .team-status.available { color: #4ade80; }
+.team-card .team-status.talking { color: #60a5fa; font-family: monospace; }
+.team-card .team-status.ringing { color: #fbbf24; }
+.team-card .team-status.paused { color: #9ca3af; font-style: italic; }
+.team-card .team-status.offline { color: #6b7280; }
+
+.team-card .team-dept {
+    font-size: 11px;
+    color: #6366f1;
+    text-transform: uppercase;
+    margin-top: 6px;
+}
+
+/* Responsive adjustments for team grid */
+@media (max-width: 1400px) {
+    .team-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .team-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+}
+
 /* ========== EASTER EGGS ========== */
 .easter-egg-overlay {
     position: fixed;

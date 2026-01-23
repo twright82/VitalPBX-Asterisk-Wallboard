@@ -88,9 +88,9 @@ try {
     // Calculate overall SLA
     $overallSla = $totalAnswered > 0 ? calculate_sla() : 100;
     
-    // Get agent statuses
+    // Get agent statuses (exclude team members)
     $agents = $db->fetchAll("
-        SELECT 
+        SELECT
             a.extension,
             a.agent_name as name,
             a.status,
@@ -112,11 +112,46 @@ try {
         LEFT JOIN calls c ON a.current_call_id = c.unique_id
         LEFT JOIN queues q ON c.queue_number = q.queue_number
         INNER JOIN extensions e ON a.extension = e.extension
-        WHERE e.is_active = 1
-        ORDER BY 
+        WHERE e.is_active = 1 AND (e.is_team_member = 0 OR e.is_team_member IS NULL)
+        ORDER BY
             FIELD(a.status, 'available', 'ringing', 'on_call', 'wrapup', 'paused', 'offline', 'unknown'),
             a.agent_name
     ");
+
+    // Get team member statuses (non-queue staff)
+    $teamMembers = $db->fetchAll("
+        SELECT
+            a.extension,
+            a.agent_name as name,
+            a.status,
+            a.pause_reason,
+            a.status_since,
+            a.current_call_id,
+            a.current_call_type,
+            a.talking_to,
+            a.talking_to_name,
+            a.call_started_at,
+            a.calls_today,
+            a.talk_time_today,
+            e.team
+        FROM agent_status a
+        INNER JOIN extensions e ON a.extension = e.extension
+        WHERE e.is_active = 1 AND e.is_team_member = 1
+        ORDER BY
+            e.team,
+            FIELD(a.status, 'available', 'ringing', 'on_call', 'wrapup', 'paused', 'offline', 'unknown'),
+            a.agent_name
+    ");
+
+    // Calculate call duration for team members
+    foreach ($teamMembers as &$member) {
+        if ($member['call_started_at'] && in_array($member['status'], ['on_call', 'ringing'])) {
+            $member['call_duration'] = time() - strtotime($member['call_started_at']);
+        } else {
+            $member['call_duration'] = 0;
+        }
+    }
+    unset($member);
     
     // Calculate call duration for active calls
     foreach ($agents as &$agent) {
@@ -260,6 +295,7 @@ try {
         'agent_counts' => $statusCounts,
         'queues' => $queues,
         'agents' => $agents,
+        'team_members' => $teamMembers,
         'calls_waiting' => $callsWaiting,
         'callbacks' => $callbacks,
         'leaderboard' => $leaderboard,
