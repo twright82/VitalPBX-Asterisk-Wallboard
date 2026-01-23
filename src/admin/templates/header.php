@@ -57,7 +57,10 @@ try {
                 <a href="/admin/reports.php" class="nav-item <?= $currentPage === 'reports' ? 'active' : '' ?>">
                     <span class="icon">📈</span> Reports
                 </a>
-                
+                <a href="/admin/email-reports.php" class="nav-item <?= $currentPage === 'email-reports' ? 'active' : '' ?>">
+                    <span class="icon">📧</span> Email Reports
+                </a>
+
                 <?php if (has_role('admin')): ?>
                 <div class="nav-divider"></div>
                 <a href="/admin/users.php" class="nav-item <?= $currentPage === 'users' ? 'active' : '' ?>">
