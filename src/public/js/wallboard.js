@@ -340,9 +340,12 @@ class Wallboard {
         slaPercent.className = `value ${summary.sla_class}`;
         
         // Callbacks
-        document.getElementById('callbackCount').textContent = summary.callbacks_waiting || 0;
-        document.getElementById('abandonedCount').textContent = summary.abandoned_today || 0;
-        document.getElementById('totalCallsCount').textContent = summary.total_calls_today || 0;
+        const callbackEl = document.getElementById('callbackCount');
+        const abandonedEl = document.getElementById('abandonedCount');
+        const totalCallsEl = document.getElementById('totalCallsCount');
+        if (callbackEl) callbackEl.textContent = summary.callbacks_waiting || 0;
+        if (abandonedEl) abandonedEl.textContent = summary.abandoned_today || 0;
+        if (totalCallsEl) totalCallsEl.textContent = summary.total_calls_today || 0;
         
         // Agent counts
         const counts = this.data.agent_counts;
