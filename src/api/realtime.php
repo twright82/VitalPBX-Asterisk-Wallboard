@@ -270,7 +270,25 @@ try {
         ORDER BY sent_at DESC
         LIMIT 10
     ");
-    
+
+    // Get active alerts for browser popups
+    $activeAlerts = $db->fetchAll("
+        SELECT
+            id,
+            alert_type,
+            queue_number,
+            message,
+            severity,
+            triggered_at,
+            CASE WHEN acknowledged_at IS NOT NULL THEN 1 ELSE 0 END as is_acknowledged
+        FROM active_alerts
+        WHERE is_active = 1
+        ORDER BY
+            FIELD(severity, 'critical', 'warning', 'info'),
+            triggered_at DESC
+        LIMIT 10
+    ");
+
     // Get company config
     $config = $db->fetchOne("SELECT company_name, timezone, wrapup_time FROM company_config LIMIT 1");
     
@@ -300,6 +318,7 @@ try {
         'callbacks' => $callbacks,
         'leaderboard' => $leaderboard,
         'alerts' => $alerts,
+        'active_alerts' => $activeAlerts,
         'config' => [
             'wrapup_time' => $config['wrapup_time'] ?? 60,
             'timezone' => $config['timezone'] ?? 'America/Chicago'

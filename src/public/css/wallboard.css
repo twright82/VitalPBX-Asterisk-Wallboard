@@ -1031,3 +1031,137 @@ body {
     0%, 60%, 100% { opacity: 0; }
     30% { opacity: 1; }
 }
+
+/* ========== ALERT POPUPS ========== */
+.alert-popup-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1500;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+.alert-popup {
+    background: linear-gradient(145deg, #1a1a2e 0%, #0f0f1a 100%);
+    border-radius: 12px;
+    padding: 15px;
+    border-left: 5px solid #fbbf24;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    animation: slideIn 0.3s ease-out;
+    transition: all 0.3s ease;
+}
+
+.alert-popup.warning {
+    border-left-color: #fbbf24;
+    background: linear-gradient(145deg, #2a2a1e 0%, #1a1a0a 100%);
+}
+
+.alert-popup.critical {
+    border-left-color: #ef4444;
+    background: linear-gradient(145deg, #2a1a1a 0%, #1a0a0a 100%);
+    animation: slideIn 0.3s ease-out, criticalPulse 2s ease-in-out infinite;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes criticalPulse {
+    0%, 100% {
+        box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 30px rgba(239, 68, 68, 0.6);
+    }
+}
+
+.alert-popup.fade-out {
+    animation: slideOut 0.3s ease-in forwards;
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.alert-popup-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.alert-popup-icon {
+    font-size: 20px;
+}
+
+.alert-popup-type {
+    flex: 1;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #94a3b8;
+}
+
+.alert-popup-dismiss {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 5px;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.alert-popup-dismiss:hover {
+    color: #fff;
+}
+
+.alert-popup-message {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.alert-popup.warning .alert-popup-message {
+    color: #fbbf24;
+}
+
+.alert-popup.critical .alert-popup-message {
+    color: #fca5a5;
+}
+
+.alert-popup-time {
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* Responsive for alert popups */
+@media (max-width: 768px) {
+    .alert-popup-container {
+        left: 10px;
+        right: 10px;
+        max-width: none;
+    }
+}

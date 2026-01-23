@@ -247,6 +247,7 @@ class Wallboard {
         this.renderWaitingCalls();
         this.renderLeaderboard();
         this.renderBottomBar();
+        this.renderAlertPopups();
     }
     
     renderSummary() {
@@ -517,14 +518,94 @@ class Wallboard {
     renderBottomBar() {
         // Company name
         document.getElementById('companyName').textContent = this.data.company || 'Call Center';
-        
+
         // Queue numbers
         const queueNums = document.getElementById('queueNumbers');
         if (this.data.queues) {
-            queueNums.innerHTML = this.data.queues.map(q => 
+            queueNums.innerHTML = this.data.queues.map(q =>
                 `<span>${this.escapeHtml(q.display_name)}: <span class="queue-num">${q.queue_number}</span></span>`
             ).join('');
         }
+    }
+
+    renderAlertPopups() {
+        const alerts = this.data.active_alerts;
+
+        // Get or create container
+        let container = document.getElementById('alertPopupContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'alertPopupContainer';
+            container.className = 'alert-popup-container';
+            document.body.appendChild(container);
+        }
+
+        // No alerts - hide container
+        if (!alerts || alerts.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+
+        // Only show unacknowledged alerts
+        const unacknowledged = alerts.filter(a => !a.is_acknowledged);
+
+        if (unacknowledged.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+
+        container.innerHTML = unacknowledged.map(alert => {
+            const severityClass = alert.severity === 'critical' ? 'critical' : 'warning';
+            const icon = alert.severity === 'critical' ? '🚨' : '⚠️';
+            const timeAgo = this.formatTimeAgo(alert.triggered_at);
+
+            return `
+                <div class="alert-popup ${severityClass}" data-alert-id="${alert.id}">
+                    <div class="alert-popup-header">
+                        <span class="alert-popup-icon">${icon}</span>
+                        <span class="alert-popup-type">${this.escapeHtml(alert.alert_type.replace(/_/g, ' '))}</span>
+                        <button class="alert-popup-dismiss" onclick="wallboard.acknowledgeAlert(${alert.id})">&times;</button>
+                    </div>
+                    <div class="alert-popup-message">${this.escapeHtml(alert.message)}</div>
+                    <div class="alert-popup-time">${timeAgo}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async acknowledgeAlert(alertId) {
+        try {
+            const response = await fetch('/api/acknowledge-alert.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `alert_id=${alertId}`
+            });
+
+            if (response.ok) {
+                // Remove the popup immediately
+                const popup = document.querySelector(`.alert-popup[data-alert-id="${alertId}"]`);
+                if (popup) {
+                    popup.classList.add('fade-out');
+                    setTimeout(() => popup.remove(), 300);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to acknowledge alert:', error);
+        }
+    }
+
+    formatTimeAgo(timestamp) {
+        if (!timestamp) return '';
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffSeconds = Math.floor((now - date) / 1000);
+
+        if (diffSeconds < 60) return 'Just now';
+        if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}m ago`;
+        if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)}h ago`;
+        return date.toLocaleTimeString();
     }
     
     updateTimers() {

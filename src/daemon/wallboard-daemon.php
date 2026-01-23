@@ -20,6 +20,7 @@ chdir(__DIR__);
 
 require_once __DIR__ . '/ami-connector.php';
 require_once __DIR__ . '/event-handler.php';
+require_once __DIR__ . '/alert-processor.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 
@@ -245,6 +246,10 @@ function run_daemon($debug = false) {
     if ($debug) {
         // $eventHandler->enableDebug(EVENT_LOG_FILE);
     }
+
+    // Create alert processor
+    $alertProcessor = new AlertProcessor($db);
+    daemon_log("Alert processor initialized");
     
     // Register event callback
     $ami->onAnyEvent(function($event) use ($eventHandler) {
@@ -300,7 +305,16 @@ function run_daemon($debug = false) {
                 $ami->getQueueSummary();
                 $lastStatusPoll = $now;
             }
-            
+
+            // Check alerts every 30 seconds
+            if ($alertProcessor->shouldCheck()) {
+                try {
+                    $alertProcessor->checkAlerts();
+                } catch (Exception $e) {
+                    daemon_log("Alert check error: " . $e->getMessage(), 'ERROR');
+                }
+            }
+
             // Update SLA every 5 minutes instead (less disruptive)
             // Disabled for now - causes connection issues
             // static $lastSlaUpdate = 0;
