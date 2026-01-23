@@ -17,10 +17,12 @@ Three major features were added to the VitalPBX Asterisk Wallboard on January 22
 **Trigger:** Click the company name (bottom-left of wallboard) **7 times** within 3 seconds.
 
 **Result:** Full-screen overlay appears with:
+- Victory fanfare sound (bass drop + C-E-G-C chord + airhorn)
 - Gold trophy icon with glowing animation
 - Confetti falling animation (150 pieces, multiple colors)
 - Message: "Built by Tim Wright"
 - Subtitle: "The Greatest Wallboard Ever Created. Tremendous."
+- Zinger: "Other wallboards wish they had this energy." (orange, pulsing)
 
 **Dismiss:** Click anywhere or wait 6 seconds.
 
