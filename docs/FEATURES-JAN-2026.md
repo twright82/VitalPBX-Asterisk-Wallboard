@@ -1,7 +1,7 @@
 # Wallboard Features - January 2026
 
 ## Overview
-Four major features were added to the VitalPBX Asterisk Wallboard on January 22-23, 2026.
+Major features and fixes added to the VitalPBX Asterisk Wallboard from January 21-24, 2026.
 
 | Feature | Status | Tested |
 |---------|--------|--------|
@@ -9,6 +9,8 @@ Four major features were added to the VitalPBX Asterisk Wallboard on January 22-
 | Team Extensions Panel | Complete | Yes |
 | Real-Time Alerts | Complete | Yes |
 | Daily Email Reports | Complete | Yes |
+| Manager View Fix | Complete | Yes |
+| Orphaned Calls Fix | Complete | Yes |
 
 ---
 
@@ -292,12 +294,60 @@ ALTER TABLE alert_rules ADD COLUMN last_triggered_at TIMESTAMP;
 
 ---
 
+## 5. Bug Fixes (Jan 24, 2026)
+
+### Manager.html Stuck on "Connecting"
+**Problem:** The manager view (`manager.html`) would get stuck on the "Connecting..." screen.
+
+**Root Cause:** The `wallboard.js` script expected an `errorOverlay` element that didn't exist in manager.html.
+
+**Fix:** Added the missing `errorOverlay` element to manager.html and added null checks in wallboard.js for optional stat elements.
+
+**Files Modified:**
+- `src/public/manager.html` - Added errorOverlay div
+- `src/public/js/wallboard.js` - Added null checks for optional elements
+
+### Orphaned Waiting Call Records
+**Problem:** When a caller rejoins a queue (e.g., after transfer or reconnect), Asterisk generates a new `unique_id`. The old "waiting" call record would remain orphaned forever.
+
+**Root Cause:** The INSERT used `ON DUPLICATE KEY UPDATE` keyed on `unique_id`, but rejoining callers get new unique_ids.
+
+**Fix:** Before inserting a new waiting record, close any existing waiting records for the same caller+queue combination:
+```php
+$stmt = $this->db->prepare("UPDATE calls SET status = 'abandoned', ended_at = NOW()
+    WHERE caller_number = ? AND queue_number = ? AND status = 'waiting'");
+$stmt->execute([$callerNum, $queue]);
+```
+
+**Files Modified:**
+- `src/daemon/event-handler.php` - Added orphan cleanup in `onQueueCallerJoin()`
+
+---
+
 ## Git Commits
 
 ```
+46c2693 - Fix orphaned waiting call records and remove duplicate code
+ab171cc - Fix manager.html stuck on Connecting screen
+446fc4f - Update docs with Daily Email Reports feature
+58cface - Add Daily Email Reports feature
+760b995 - Update docs with sound effect and zinger
+f66e533 - Add victory fanfare sound and zinger to trophy easter egg
+fe6551b - Add documentation for Jan 2026 features
 1b203bb - Add real-time alerts with Email, Slack, Teams, and browser popups
+771f7ca - Add Team Extensions feature
+03b5048 - Add easter eggs to wallboard
 fdf35e3 - Fix avg wait time and add avg call time to agent cards
-0c94d17 - Jan 22, 2026 - Wallboard updates complete (Team Extensions, Easter Eggs)
+0c94d17 - Jan 22, 2026 - Wallboard updates complete
+7fc6170 - Fix phone number formatting for brand prefixes
+bfd35e4 - Add queue badges showing signed in/out status
+c6cbe44 - Add Calls Today box, SSL setup
+1362607 - Remove wrapup tracking, security cleanup
+68db630 - Add abandoned counter, fix API totals
+735e7a0 - Major wallboard improvements - Jan 21
+46a6b69 - Fix daemon stability and improve caller display
+52a1ee8 - Fix admin edit syncs to agent_status
+f96be73 - Add visible status labels and daily reset script
 ```
 
 ---
@@ -406,4 +456,4 @@ CREATE TABLE report_recipients (
 ## Support
 
 Created by Claude Code (Claude Opus 4.5)
-January 22-23, 2026
+January 21-24, 2026

@@ -2,13 +2,33 @@
 
 Real-time call center wallboard for VitalPBX/Asterisk systems.
 
+**Version 2.0.0** | [Changelog](CHANGELOG.md) | [Full Feature Docs](docs/FEATURES-JAN-2026.md)
+
 ## Features
 
+### Core Wallboard
 - **Real-time agent status** - See who's available, on call, paused, or ringing
 - **Queue statistics** - Calls waiting, longest wait time, agents available
 - **Call tracking** - Track answered, abandoned, and SLA metrics
-- **VitalPBX integration** - Automatic extension name sync via API
-- **Admin panel** - Manage extensions, queues, alerts, and settings
+- **Queue badges** - See which queues each agent is signed into (green/gray)
+- **Team Extensions** - Display non-queue staff (managers, NOC, back-office)
+
+### Alerts & Notifications
+- **Real-time alerts** - Browser popups, Email, Slack, and Microsoft Teams
+- **Configurable thresholds** - Calls waiting, longest wait, SLA, abandoned rate
+- **Quiet hours** - Suppress alerts during off-hours
+- **Alert history** - Review past alerts and acknowledgments
+
+### Reporting
+- **Daily email reports** - Automated end-of-day summary with charts
+- **Hourly call volume** - Visual bar chart of call patterns
+- **Agent performance** - Calls, talk time, avg handle time, missed calls
+- **Queue breakdown** - Calls by queue with percentages
+
+### Integration
+- **VitalPBX API sync** - Automatic extension name sync
+- **Brand prefixes** - Support for #31 BW, #32 OL, #33 XL, #34 DCB routing
+- **Admin panel** - Manage extensions, queues, alerts, reports, and settings
 
 ## Requirements
 
