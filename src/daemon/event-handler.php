@@ -164,6 +164,10 @@ class EventHandler {
             return;
         }
         
+        // Close any existing waiting record for this caller+queue (handles rejoin with new unique_id)
+        $stmt = $this->db->prepare("UPDATE calls SET status = 'abandoned', ended_at = NOW() WHERE caller_number = ? AND queue_number = ? AND status = 'waiting'");
+        $stmt->execute([$callerNum, $queue]);
+
         $this->log("Caller joined: $queue, Caller: $callerNum", 'EVENT');
         
         $stmt = $this->db->prepare("
@@ -230,9 +234,6 @@ class EventHandler {
         $callerName = $this->getCallerName($e);
         $queue = $this->getQueue($e);
         if (!$ext) return;
-        // Skip untracked queues
-        $tracked = $this->db->query("SELECT queue_number FROM queues WHERE is_active = 1")->fetchAll(PDO::FETCH_COLUMN);
-        if ($queue && !in_array($queue, $tracked)) return;
         // Skip untracked queues
         $tracked = $this->db->query("SELECT queue_number FROM queues WHERE is_active = 1")->fetchAll(PDO::FETCH_COLUMN);
         if ($queue && !in_array($queue, $tracked)) return;
