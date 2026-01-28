@@ -142,7 +142,7 @@ class EventHandler {
                         $this->logRaw($event);
                     }
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->log("Error handling $type: " . $e->getMessage(), 'ERROR');
         }
     }

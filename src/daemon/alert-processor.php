@@ -140,7 +140,7 @@ class AlertProcessor {
     }
 
     private function checkCallsWaiting($threshold, $rule) {
-        $stmt = $this->db->query("
+        $stmt = $this->db->prepare("
             SELECT
                 q.queue_number,
                 q.display_name,
@@ -150,7 +150,8 @@ class AlertProcessor {
             WHERE q.is_active = 1
             GROUP BY q.queue_number
             HAVING waiting >= ?
-        ", [$threshold]);
+        ");
+        $stmt->execute([$threshold]);
 
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -180,7 +181,7 @@ class AlertProcessor {
     }
 
     private function checkLongestWait($threshold, $rule) {
-        $stmt = $this->db->query("
+        $stmt = $this->db->prepare("
             SELECT
                 c.queue_number,
                 q.display_name,
@@ -190,7 +191,8 @@ class AlertProcessor {
             WHERE c.status = 'waiting' AND q.is_active = 1
             GROUP BY c.queue_number
             HAVING longest_wait >= ?
-        ", [$threshold]);
+        ");
+        $stmt->execute([$threshold]);
 
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -223,7 +225,7 @@ class AlertProcessor {
         $stmt = $this->db->query("
             SELECT
                 COUNT(*) as total,
-                SUM(CASE WHEN wait_time <= 30 THEN 1 ELSE 0 END) as within_sla
+                SUM(CASE WHEN wait_time <= (SELECT sla_threshold FROM company_config LIMIT 1) THEN 1 ELSE 0 END) as within_sla
             FROM calls
             WHERE status = 'completed' AND DATE(created_at) = CURDATE()
         ");

@@ -279,27 +279,28 @@ function run_daemon($debug = false) {
         $lastStatusPoll = time();
         
         while ($running && $ami->isConnected()) {
+          try {
             // Process signals
             if (function_exists('pcntl_signal_dispatch')) {
                 pcntl_signal_dispatch();
             }
-            
+
             // Read events (with 1 second timeout)
             $event = $ami->readEvent(1);
-            
+
             if ($event) {
                 $eventHandler->handleEvent($event);
             }
-            
+
             // Periodic tasks
             $now = time();
-            
+
             // Ping every 30 seconds to keep connection alive
             if ($now - $lastPing >= 30) {
                 $ami->ping();
                 $lastPing = $now;
             }
-            
+
             // Poll queue status every 60 seconds (backup to events)
             if ($now - $lastStatusPoll >= 60) {
                 $ami->getQueueSummary();
@@ -310,7 +311,7 @@ function run_daemon($debug = false) {
             if ($alertProcessor->shouldCheck()) {
                 try {
                     $alertProcessor->checkAlerts();
-                } catch (Exception $e) {
+                } catch (\Throwable $e) {
                     daemon_log("Alert check error: " . $e->getMessage(), 'ERROR');
                 }
             }
@@ -322,6 +323,9 @@ function run_daemon($debug = false) {
             //     updateDailyStats($db);
             //     $lastSlaUpdate = $now;
             // }
+          } catch (\Throwable $e) {
+            daemon_log("Unexpected error in event loop: " . $e->getMessage() . " at " . $e->getFile() . ":" . $e->getLine(), 'ERROR');
+          }
         }
         
         if ($ami->isConnected()) {
